@@ -76,7 +76,7 @@
 
 於 `.env` 檔案可自訂以下參數：
 
-- `NODE_VERSION`、`JAVA_VERSION`、`MAVEN_VERSION`：控制各工具版本
+- `NODE_VERSION`：控制各工具版本
 
 變更後請重新建構映像：
 
