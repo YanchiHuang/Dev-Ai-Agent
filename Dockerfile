@@ -72,7 +72,8 @@ WORKDIR /home/aiagent/workspace
 # 確保 NVM 環境在每次登入時都可用
 RUN echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc \
     && echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> ~/.bashrc \
-    && echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' >> ~/.bashrc
+    && echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' >> ~/.bashrc \
+    && echo 'nvm use 22 > /dev/null' >> ~/.bashrc
 
 # 暴露常用端口（可選）
 EXPOSE 3000 8000 8080
