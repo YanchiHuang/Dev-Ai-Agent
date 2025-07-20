@@ -41,6 +41,14 @@ jobs:
             type=ref,event=tag
             type=ref,event=branch
             type=sha
+          labels: |
+            org.opencontainers.image.title=${{ github.repository }}
+            org.opencontainers.image.description="開發用 AI Agent 容器環境，包含 Node.js、Python、GitHub CLI 及各種 AI 程式開發工具"
+            org.opencontainers.image.url=https://github.com/${{ github.repository }}
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.version=${{ github.ref_name }}
+            org.opencontainers.image.created=${{ steps.meta.outputs.created }}
+            org.opencontainers.image.licenses=AGPL-3.0
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
