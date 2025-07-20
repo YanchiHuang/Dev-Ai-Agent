@@ -1,6 +1,15 @@
-# 這是一個 AI AGENT 的容器
+# 🧠 Dev-Ai-Agent
 
-## DockerFile 以 debian:bookworm-slim 版本為基底
+AI 開發助手容器，整合多個 CLI 工具（如 Codex、Gemini、Claude），基於 `debian:bookworm-slim` 製作，支援 Node.js、Python、Git 等開發工具，讓 AI 助手指令隨時隨地可用！
+
+## 🛠️ 主要功能
+
+- Codex CLI (`@openai/codex`)
+- Gemini CLI (`@google/gemini-cli`)
+- Claude Code CLI (`@anthropic-ai/claude-code`)
+- NVM / Node.js v22 / Python3 / Git / GH CLI
+- 使用 `.env` 管理金鑰與設定
+- 非 root 使用者執行，安全性佳
 
 ## DockerFile 預設安裝套件
 
