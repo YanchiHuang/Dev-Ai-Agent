@@ -1,0 +1,22 @@
+name: Build & Test Container
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build Docker Image
+        run: docker build -t dev-ai-agent .
+
+      - name: Run CLI Version Check
+        run: |
+          docker run --rm dev-ai-agent bash -c "codex --version && gemini --version && claude --version"
