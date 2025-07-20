@@ -4,7 +4,6 @@ FROM debian:bookworm-slim
 ENV DEBIAN_FRONTEND=noninteractive
 ENV NODE_VERSION=22
 ENV NVM_DIR=/home/aiagent/.nvm
-ENV PATH=$NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
 
 # 更新套件列表並安裝基本工具
 RUN apt-get update && apt-get install -y \
@@ -36,11 +35,12 @@ WORKDIR /home/aiagent
 # 安裝 NVM
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
 
-# 安裝 Node.js 22
-RUN bash -c "source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION && nvm use $NODE_VERSION && nvm alias default $NODE_VERSION"
+# 安裝 Node.js 22 和 AI Agent 工具
+RUN bash -c "source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION && nvm use $NODE_VERSION && nvm alias default $NODE_VERSION && npm install -g @openai/codex @google/gemini-cli @anthropic-ai/claude-code"
 
-# 安裝 AI Agent 工具
-RUN bash -c "source $NVM_DIR/nvm.sh && npm install -g @openai/codex @google/gemini-cli @anthropic-ai/claude-code"
+# 設定 PATH 環境變數
+RUN NODE_PATH=$(ls -d $NVM_DIR/versions/node/*/bin | head -1) && \
+    echo "export PATH=$NODE_PATH:\$PATH" >> ~/.bashrc
 
 # 設定 Git 全域設定
 RUN git config --global core.autocrlf input \
