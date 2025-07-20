@@ -1,7 +1,7 @@
 FROM debian:bookworm-slim
 
 LABEL org.opencontainers.image.source=https://github.com/YanchiHuang/Dev-Ai-Agent
-LABEL org.opencontainers.image.description="開發用 AI Agent 容器環境，包含 Node.js、Python、GitHub CLI 及各種 AI 程式開發工具"
+LABEL org.opencontainers.image.description="Dev-Ai-Agent 是一款專為 AI 開發者打造的 Docker 容器，整合 Codex / Gemini / Claude AI CLI 工具箱"
 LABEL org.opencontainers.image.licenses=AGPL-3.0
 
 # 設定環境變數
