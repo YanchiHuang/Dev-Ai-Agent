@@ -17,6 +17,8 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     python3-venv \
+    vim \
+    powerline \
     && rm -rf /var/lib/apt/lists/*
 
 # 安裝 GitHub CLI
@@ -49,6 +51,12 @@ RUN bash -c "source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION && nvm use $NOD
 # 設定 PATH 環境變數
 RUN NODE_PATH=$(ls -d $NVM_DIR/versions/node/*/bin | head -1) && \
     echo "export PATH=$NODE_PATH:\$PATH" >> ~/.bashrc
+
+# 設定 Powerline 到 .bashrc
+RUN echo 'POWERLINE_SCRIPT=/usr/share/powerline/bindings/bash/powerline.sh' >> ~/.bashrc \
+    && echo 'if [ -f $POWERLINE_SCRIPT ]; then' >> ~/.bashrc \
+    && echo '  source $POWERLINE_SCRIPT' >> ~/.bashrc \
+    && echo 'fi' >> ~/.bashrc
 
 # 設定 Git 全域設定
 RUN git config --global core.autocrlf input \
