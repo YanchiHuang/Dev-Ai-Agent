@@ -1,0 +1,26 @@
+services:
+  aiagent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NODE_VERSION: ${NODE_VERSION:-22}
+    container_name: aiagent
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - NODE_VERSION=${NODE_VERSION:-22}
+    volumes:
+      - ./workspace:/home/aiagent/workspace
+      - ./config:/home/aiagent/config
+      - ~/.ssh:/home/aiagent/.ssh:ro
+    working_dir: /home/aiagent/workspace
+    tty: true
+    stdin_open: true
+    networks:
+      - aiagent-network
+
+networks:
+  aiagent-network:
+    driver: bridge

@@ -1,0 +1,23 @@
+[user]
+	name = ai agent
+	email = aiagent@example.com
+
+[core]
+	autocrlf = input
+	editor = nano
+
+[init]
+	defaultBranch = master
+
+[pull]
+	rebase = false
+
+[push]
+	default = simple
+
+[alias]
+	st = status
+	co = checkout
+	br = branch
+	ci = commit
+	lg = log --oneline --graph --decorate
