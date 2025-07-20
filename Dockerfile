@@ -58,23 +58,27 @@ RUN git config --global core.autocrlf input \
 # 設定預設工作目錄
 WORKDIR /home/aiagent/workspace
 
-# 設定 bash 環境 (NVM, PATH, Powerline)
+# 設定 bash 環境 (NVM, PATH, Powerline) - 同時支援互動式和非互動式 shell
 RUN echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc \
     && echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> ~/.bashrc \
     && echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' >> ~/.bashrc \
-    && echo 'nvm use 22 > /dev/null' >> ~/.bashrc \
+    && echo 'nvm use 22 > /dev/null 2>&1' >> ~/.bashrc \
     && echo 'export PATH="$NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH"' >> ~/.bashrc \
     && echo 'POWERLINE_SCRIPT=/usr/share/powerline/bindings/bash/powerline.sh' >> ~/.bashrc \
     && echo 'if [ -f $POWERLINE_SCRIPT ]; then' >> ~/.bashrc \
     && echo '  source $POWERLINE_SCRIPT' >> ~/.bashrc \
-    && echo 'fi' >> ~/.bashrc
+    && echo 'fi' >> ~/.bashrc \
+    && echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.profile \
+    && echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> ~/.profile \
+    && echo 'nvm use 22 > /dev/null 2>&1' >> ~/.profile \
+    && echo 'export PATH="$NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH"' >> ~/.profile
 
 # 暴露常用端口（可選）
 EXPOSE 3000 8000 8080
 
 # 健康檢查
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD bash -c 'source ~/.bashrc && node --version' || exit 1
+  CMD bash -c 'source ~/.profile && node --version' || exit 1
 
 # 預設命令
 CMD ["/bin/bash"]
