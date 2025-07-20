@@ -10,6 +10,7 @@
 - curl
 - zstd
 - github cli
+- python3
 
 ## 提供以下 AI Agent 功能
 

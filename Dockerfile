@@ -14,6 +14,9 @@ RUN apt-get update && apt-get install -y \
     gnupg \
     lsb-release \
     sudo \
+    python3 \
+    python3-pip \
+    python3-venv \
     && rm -rf /var/lib/apt/lists/*
 
 # 安裝 GitHub CLI
@@ -31,6 +34,11 @@ RUN useradd -m -s /bin/bash aiagent \
 # 切換到 aiagent 使用者
 USER aiagent
 WORKDIR /home/aiagent
+
+# 建立 config、workspace、ssh、projects 目錄並設定適當權限
+RUN mkdir -p /home/aiagent/config /home/aiagent/workspace /home/aiagent/.ssh /home/aiagent/projects \
+    && chmod 700 /home/aiagent/.ssh \
+    && chmod 755 /home/aiagent/config /home/aiagent/workspace /home/aiagent/projects
 
 # 安裝 NVM
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
