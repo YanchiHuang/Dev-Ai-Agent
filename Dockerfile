@@ -22,18 +22,15 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
     && apt-get install gh -y \
     && rm -rf /var/lib/apt/lists/*
 
-RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" \
-    && echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> /root/.bashrc
-
-ENV PATH="/home/linuxbrew/.linuxbrew/bin:${PATH}"
-
-RUN eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" && brew install pnpm
-
 RUN useradd -m -s /bin/bash aiagent && \
     echo "aiagent ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 USER aiagent
 WORKDIR /home/aiagent
+
+RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || true
+
+ENV PATH="/home/linuxbrew/.linuxbrew/bin:${PATH}"
 
 RUN echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ~/.bashrc \
     && echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc \
@@ -41,7 +38,6 @@ RUN echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ~/.bashrc \
     && echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' >> ~/.bashrc
 
 ENV NVM_DIR=/home/aiagent/.nvm
-ENV PATH=$NVM_DIR/versions/node/v${NODE_VERSION}/bin:$PATH
 
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash \
     && . $NVM_DIR/nvm.sh \
@@ -49,9 +45,15 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | b
     && nvm use ${NODE_VERSION} \
     && nvm alias default ${NODE_VERSION}
 
-RUN eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" && \
-    . $NVM_DIR/nvm.sh && \
-    npm install -g @anthropics/claude-code-cli
+ENV PATH=$NVM_DIR/versions/node/v${NODE_VERSION}/bin:/home/linuxbrew/.linuxbrew/bin:$PATH
+
+RUN . $NVM_DIR/nvm.sh && \
+    npm install -g pnpm
+
+RUN echo "# AI CLI tools can be installed manually:" >> ~/.bashrc \
+    && echo "# - Claude Code: Download from Anthropic" >> ~/.bashrc \
+    && echo "# - OpenAI CLI: npm install -g openai" >> ~/.bashrc \
+    && echo "# - Custom scripts for Gemini API" >> ~/.bashrc
 
 COPY config/gitconfig /home/aiagent/.gitconfig
 
