@@ -11,6 +11,8 @@
 - zstd
 - github cli
 - python3
+- powerline
+- vim
 
 ## 提供以下 AI Agent 功能
 

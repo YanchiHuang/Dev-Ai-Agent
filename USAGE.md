@@ -74,6 +74,9 @@ claude "請幫我分析這個程式碼"
 ### Codex CLI (OpenAI)
 
 ```bash
+# 登入
+codex login
+
 # 使用 codex-cli
 codex "write a python function to sort a list"
 ```
@@ -201,8 +204,6 @@ sudo apt update && sudo apt install <package-name>
 # 使用 npm
 npm install -g <package-name>
 
-# 使用 brew
-brew install <package-name>
 ```
 
 ## 安全注意事項
