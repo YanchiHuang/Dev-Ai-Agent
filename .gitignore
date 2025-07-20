@@ -3,3 +3,19 @@
 
 # 保留環境變數範例檔案
 !.env.example
+
+# 環境與設定
+*.log
+
+# Docker 相關
+__pycache__/
+*.pyc
+workspace/
+config/ssh/*
+!config/ssh/.keep
+
+# OS / 編輯器暫存檔
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
