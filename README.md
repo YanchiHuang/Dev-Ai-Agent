@@ -49,13 +49,14 @@
    ```
 
 4. **進入容器工作**
+
    ```bash
    docker-compose exec aiagent bash
    ```
 
 ### 檔案結構
 
-```
+```txt
 .
 ├── Dockerfile              # Docker映像建構檔
 ├── docker-compose.yml      # Docker Compose設定檔
