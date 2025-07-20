@@ -19,4 +19,7 @@ jobs:
 
       - name: Run CLI Version Check
         run: |
-          docker run --rm dev-ai-agent bash -c "codex --version && gemini --version && claude --version"
+          docker run --rm dev-ai-agent bash -c "\
+            which codex && codex --version && \
+            which gemini && gemini --version && \
+            which claude && claude --version"
