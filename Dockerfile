@@ -1,5 +1,9 @@
 FROM debian:bookworm-slim
 
+LABEL org.opencontainers.image.source=https://github.com/YanchiHuang/Dev-Ai-Agent
+LABEL org.opencontainers.image.description="開發用 AI Agent 容器環境，包含 Node.js、Python、GitHub CLI 及各種 AI 程式開發工具"
+LABEL org.opencontainers.image.licenses=AGPL-3.0-only
+
 # 設定環境變數
 ENV DEBIAN_FRONTEND=noninteractive
 ENV NODE_VERSION=22
@@ -74,7 +78,7 @@ EXPOSE 3000 8000 8080
 
 # 健康檢查
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD bash -c 'source ~/.profile && node --version' || exit 1
+    CMD bash -c 'source ~/.profile && node --version' || exit 1
 
 # 預設命令
 CMD ["/bin/bash"]
