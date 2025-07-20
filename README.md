@@ -1,6 +1,6 @@
 # 這是一個 AI AGENT 的容器
 
-## DockerFile 以 node last(node.js 22)版本為基底
+## DockerFile 以 debian:bookworm-slim 版本為基底
 
 ## 套件軟體
 
@@ -16,7 +16,6 @@
 - codex-cli：`npm install -g @openai/codex`
 - gemini-cli：`npm install -g @google/gemini-cli`
 - claude-code：`npm install -g @anthropic-ai/claude-code`
-
 
 ## git 設定
 
