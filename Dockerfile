@@ -42,18 +42,14 @@ RUN mkdir -p /home/aiagent/config /home/aiagent/workspace /home/aiagent/.ssh /ho
     && chmod 700 /home/aiagent/.ssh \
     && chmod 755 /home/aiagent/config /home/aiagent/workspace /home/aiagent/projects
 
+# 複製 gitconfig 設定檔
+COPY config/gitconfig /home/aiagent/.gitconfig
+
 # 安裝 NVM (最新版本)
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 
 # 安裝 Node.js 22 和 AI Agent 工具
 RUN bash -c "source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION && nvm use $NODE_VERSION && nvm alias default $NODE_VERSION && npm install -g @openai/codex @google/gemini-cli @anthropic-ai/claude-code"
-
-
-# 設定 Git 全域設定
-RUN git config --global core.autocrlf input \
-    && git config --global user.name "ai agent" \
-    && git config --global user.email "aiagent@example.com"
-
 
 # 設定預設工作目錄
 WORKDIR /home/aiagent/workspace
