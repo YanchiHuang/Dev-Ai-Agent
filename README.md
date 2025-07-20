@@ -2,7 +2,7 @@
 
 ## DockerFile 以 debian:bookworm-slim 版本為基底
 
-## 套件軟體
+## DockerFile 預設安裝套件
 
 - git
 - nvm
