@@ -62,13 +62,13 @@ docker exec -it aiagent bash
 
 ```bash
 # 初始化 Claude Code
-claude-code auth
+claude
 
 # 開始對話
-claude-code
+claude
 
 # 執行特定任務
-claude-code "請幫我分析這個程式碼"
+claude "請幫我分析這個程式碼"
 ```
 
 ### Codex CLI (OpenAI)

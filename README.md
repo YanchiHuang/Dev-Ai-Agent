@@ -5,16 +5,18 @@
 ## 套件軟體
 
 - git
+- nvm
+- node 22
 - curl
 - zstd
 - github cli
-- Homebrew (brew) 用於安裝 codex-cli
 
 ## 提供以下 AI Agent 功能
 
-- codex-cli
-- gemini-cli
-- claude code
+- codex-cli：`npm install -g @openai/codex`
+- gemini-cli：`npm install -g @google/gemini-cli`
+- claude-code：`npm install -g @anthropic-ai/claude-code`
+
 
 ## git 設定
 
