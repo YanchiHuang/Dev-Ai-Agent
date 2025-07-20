@@ -42,41 +42,39 @@ RUN mkdir -p /home/aiagent/config /home/aiagent/workspace /home/aiagent/.ssh /ho
     && chmod 700 /home/aiagent/.ssh \
     && chmod 755 /home/aiagent/config /home/aiagent/workspace /home/aiagent/projects
 
-# 安裝 NVM
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+# 安裝 NVM (最新版本)
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 
 # 安裝 Node.js 22 和 AI Agent 工具
 RUN bash -c "source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION && nvm use $NODE_VERSION && nvm alias default $NODE_VERSION && npm install -g @openai/codex @google/gemini-cli @anthropic-ai/claude-code"
 
-# 設定 PATH 環境變數
-RUN NODE_PATH=$(ls -d $NVM_DIR/versions/node/*/bin | head -1) && \
-    echo "export PATH=$NODE_PATH:\$PATH" >> ~/.bashrc
-
-# 設定 Powerline 到 .bashrc
-RUN echo 'POWERLINE_SCRIPT=/usr/share/powerline/bindings/bash/powerline.sh' >> ~/.bashrc \
-    && echo 'if [ -f $POWERLINE_SCRIPT ]; then' >> ~/.bashrc \
-    && echo '  source $POWERLINE_SCRIPT' >> ~/.bashrc \
-    && echo 'fi' >> ~/.bashrc
 
 # 設定 Git 全域設定
 RUN git config --global core.autocrlf input \
     && git config --global user.name "ai agent" \
     && git config --global user.email "aiagent@example.com"
 
-# 建立工作目錄
-RUN mkdir -p /home/aiagent/workspace
 
 # 設定預設工作目錄
 WORKDIR /home/aiagent/workspace
 
-# 確保 NVM 環境在每次登入時都可用
+# 設定 bash 環境 (NVM, PATH, Powerline)
 RUN echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc \
     && echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> ~/.bashrc \
     && echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' >> ~/.bashrc \
-    && echo 'nvm use 22 > /dev/null' >> ~/.bashrc
+    && echo 'nvm use 22 > /dev/null' >> ~/.bashrc \
+    && echo 'export PATH="$NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH"' >> ~/.bashrc \
+    && echo 'POWERLINE_SCRIPT=/usr/share/powerline/bindings/bash/powerline.sh' >> ~/.bashrc \
+    && echo 'if [ -f $POWERLINE_SCRIPT ]; then' >> ~/.bashrc \
+    && echo '  source $POWERLINE_SCRIPT' >> ~/.bashrc \
+    && echo 'fi' >> ~/.bashrc
 
 # 暴露常用端口（可選）
 EXPOSE 3000 8000 8080
+
+# 健康檢查
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD bash -c 'source ~/.bashrc && node --version' || exit 1
 
 # 預設命令
 CMD ["/bin/bash"]
