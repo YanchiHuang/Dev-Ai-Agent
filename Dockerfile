@@ -11,7 +11,9 @@ RUN apt-get update && apt-get install -y \
     gnupg \
     lsb-release \
     sudo \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
+
 
 RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
     && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
@@ -33,9 +35,22 @@ RUN useradd -m -s /bin/bash aiagent && \
 USER aiagent
 WORKDIR /home/aiagent
 
-RUN echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ~/.bashrc
+RUN echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ~/.bashrc \
+    && echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc \
+    && echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> ~/.bashrc \
+    && echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' >> ~/.bashrc
+
+ENV NVM_DIR=/home/aiagent/.nvm
+ENV PATH=$NVM_DIR/versions/node/v${NODE_VERSION}/bin:$PATH
+
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash \
+    && . $NVM_DIR/nvm.sh \
+    && nvm install ${NODE_VERSION} \
+    && nvm use ${NODE_VERSION} \
+    && nvm alias default ${NODE_VERSION}
 
 RUN eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" && \
+    . $NVM_DIR/nvm.sh && \
     npm install -g @anthropics/claude-code-cli
 
 COPY config/gitconfig /home/aiagent/.gitconfig
