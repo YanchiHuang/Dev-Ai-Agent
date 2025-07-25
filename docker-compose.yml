@@ -1,5 +1,6 @@
 services:
   aiagent:
+    image: ghcr.io/yanchihuang/dev-ai-agent:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -16,6 +17,7 @@ services:
       - ./workspace:/home/aiagent/workspace
       - ./config:/home/aiagent/config
       - ~/.ssh:/home/aiagent/.ssh:ro
+      - projects:/home/aiagent/projects
     working_dir: /home/aiagent/workspace
     tty: true
     stdin_open: true
@@ -25,3 +27,4 @@ services:
 networks:
   aiagent-network:
     driver: bridge
+
