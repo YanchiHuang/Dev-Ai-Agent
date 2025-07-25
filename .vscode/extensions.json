@@ -1,0 +1,25 @@
+{
+  "recommendations": [
+    // Docker 相關
+    "ms-azuretools.vscode-docker",
+    // YAML 支援 (for docker-compose.yml)
+    "redhat.vscode-yaml",
+    // Git 相關
+    "eamodio.gitlens",
+    // JSON 工具
+    "vscode.json-language-features",
+    // JavaScript/TypeScript 相關 (for AI CLI tools)
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    // AI 工具
+    "github.copilot",
+    "github.copilot-chat",
+    "anthropic.claude-code",
+    // 開發體驗增強
+    "vscode-icons-team.vscode-icons",
+    "usernamehw.errorlens",
+    "wayou.vscode-todo-highlight",
+    // 檔案管理
+    "alefragnani.project-manager",
+  ]
+}

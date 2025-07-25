@@ -1,0 +1,186 @@
+{
+  // 基本編輯器設定
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.trimAutoWhitespace": true,
+  "editor.rulers": [
+    80,
+    120
+  ],
+  "editor.wordWrap": "on",
+  "editor.minimap.enabled": true,
+  "editor.renderWhitespace": "boundary",
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+  // 檔案設定
+  "files.encoding": "utf8",
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true,
+  "files.autoSave": "onFocusChange",
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/node_modules": true,
+    "**/.env": false
+  },
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/*/**": true,
+    "**/__pycache__/**": true
+  },
+  // 搜尋設定
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true,
+    "**/.git": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/__pycache__": true
+  },
+  // Git 設定
+  "git.enabled": true,
+  "git.autofetch": true,
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+  "git.suggestSmartCommit": false,
+  "git.ignoreWindowsGit27Warning": true,
+  // 終端設定
+  "terminal.integrated.shell.linux": "/bin/bash",
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.cwd": "${workspaceFolder}",
+  "terminal.integrated.env.linux": {
+    "PATH": "${env:PATH}:/home/aiagent/.nvm/versions/node/v22/bin"
+  },
+  // Docker 相關設定
+  "docker.defaultRegistryPath": "ghcr.io",
+  // Dockerfile 語言設定
+  "[dockerfile]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  // YAML 語言設定 (docker-compose.yml)
+  "[yaml]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.autoIndent": "advanced"
+  },
+  // Markdown 語言設定
+  "[markdown]": {
+    "editor.wordWrap": "on",
+    "editor.quickSuggestions": {
+      "comments": "off",
+      "strings": "off",
+      "other": "off"
+    }
+  },
+  // JSON 語言設定
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features",
+    "editor.tabSize": 2
+  },
+  // JavaScript/TypeScript 設定 (for AI CLI tools)
+  "[javascript]": {
+    "editor.tabSize": 2,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+  "[typescript]": {
+    "editor.tabSize": 2,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+  // Python 設定
+  "[python]": {
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  // Shell script 設定
+  "[shellscript]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  // 工作區設定
+  "workbench.startupEditor": "readme",
+  "workbench.tree.indent": 20,
+  // 擴充功能設定
+  "extensions.autoUpdate": true,
+  "extensions.ignoreRecommendations": false,
+  // AI 工具相關設定
+  "aitools.codex.enabled": true,
+  "aitools.gemini.enabled": true,
+  "aitools.claude.enabled": true,
+  // 安全性設定
+  "security.workspace.trust.enabled": true,
+  "security.workspace.trust.startupPrompt": "once",
+  // 效能設定
+  "files.maxMemoryForLargeFilesMB": 4096,
+  "search.maxResults": 20000,
+  // 語言伺服器設定
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "python.defaultInterpreterPath": "/usr/bin/python3",
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": true,
+  // Dev Container 支援
+  "remote.containers.defaultExtensions": [
+    "ms-vscode.vscode-json",
+    "ms-azuretools.vscode-docker",
+    "redhat.vscode-yaml",
+    "ms-python.python",
+    "ms-python.black-formatter",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss"
+  ],
+  // 自動儲存與格式化
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit",
+    "source.fixAll": "explicit"
+  },
+  // 內建終端增強
+  "terminal.integrated.fontSize": 14,
+  "terminal.integrated.fontFamily": "MesloLGS NF, monospace",
+  "terminal.integrated.scrollback": 5000,
+  // 檔案關聯設定
+  "files.associations": {
+    "*.env.example": "properties",
+    "Dockerfile*": "dockerfile",
+    "docker-compose*.yml": "dockercompose",
+    "docker-compose*.yaml": "dockercompose",
+    ".gitconfig": "gitconfig",
+    "*.md": "markdown"
+  },
+  // 整合式功能
+  "breadcrumbs.enabled": true,
+  "outline.showVariables": true,
+  "outline.showFunctions": true,
+  // 調試設定
+  "debug.allowBreakpointsEverywhere": true,
+  "debug.inlineValues": "auto",
+  // 探索器設定
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+  "explorer.sortOrder": "type",
+  // 自動完成與建議
+  "editor.suggestSelection": "first",
+  "editor.acceptSuggestionOnCommitCharacter": true,
+  "editor.acceptSuggestionOnEnter": "on",
+  // 專案特定設定 - AI Agent 容器
+  "docker.enableDiagnostics": true,
+  "yaml.schemas": {
+    "https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json": "docker-compose*.yml"
+  }
+}
