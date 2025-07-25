@@ -17,5 +17,4 @@ config/ssh/*
 # OS / 編輯器暫存檔
 .DS_Store
 Thumbs.db
-.vscode/
 .idea/
