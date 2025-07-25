@@ -53,7 +53,7 @@ COPY config/gitconfig /home/aiagent/.gitconfig
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 
 # 安裝 Node.js 22 和 AI Agent 工具
-RUN bash -c "source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION && nvm use $NODE_VERSION && nvm alias default $NODE_VERSION && npm install -g @openai/codex @google/gemini-cli @anthropic-ai/claude-code"
+RUN bash -c "source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION && nvm use $NODE_VERSION && nvm alias default $NODE_VERSION && npm install -g @openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli"
 
 # 設定預設工作目錄
 WORKDIR /home/aiagent/workspace
