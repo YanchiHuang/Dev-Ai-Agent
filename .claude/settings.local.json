@@ -6,7 +6,9 @@
       "Bash(docker run:*)",
       "Bash(docker exec:*)",
       "Bash(docker inspect:*)",
-      "Bash(docker stop:*)"
+      "Bash(docker stop:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }
