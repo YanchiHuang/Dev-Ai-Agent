@@ -16,6 +16,7 @@ services:
     volumes:
       - ./workspace:/home/aiagent/workspace
       - ./config:/home/aiagent/config
+      - ./config/gitconfig:/home/aiagent/.gitconfig
       - ~/.ssh:/home/aiagent/.ssh:ro
       - projects:/home/aiagent/projects
     working_dir: /home/aiagent/workspace
