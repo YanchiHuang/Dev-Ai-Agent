@@ -29,3 +29,5 @@ networks:
   aiagent-network:
     driver: bridge
 
+volumes:
+  projects:

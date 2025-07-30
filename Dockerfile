@@ -22,8 +22,7 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-venv \
     vim \
-    powerline \
-    && rm -rf /var/lib/apt/lists/*
+    powerline
 
 # 安裝 GitHub CLI
 RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
