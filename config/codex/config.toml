@@ -1,0 +1,22 @@
+# OpenAI Codex CLI Configuration
+# This configuration is mounted to ~/.codex/config.toml in the container
+
+# Model settings
+model = "gpt-4"                      # Default model to use
+temperature = 0.7                    # Creativity level (0.0-2.0)
+max_tokens = 2048                   # Maximum response length
+
+# Behavior settings
+disable_response_storage = true      # Don't store responses locally
+approval_mode = "suggest"           # Options: "auto", "suggest", "manual"
+
+# Default instructions file path (relative to this config)
+instructions = "./instructions.txt"
+
+# API settings (can be overridden by environment variables)
+# provider_API_KEY will use OPENAI_API_KEY environment variable
+# provider_BASE_URL = "https://api.openai.com/v1"  # Custom API endpoint if needed
+
+# Output preferences
+output_format = "markdown"          # Options: "plain", "markdown"
+show_line_numbers = true           # Show line numbers for code blocks

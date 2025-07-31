@@ -19,6 +19,7 @@ services:
       - ./config/gitconfig:/home/aiagent/.gitconfig
       - ./config/gemini:/home/aiagent/.gemini
       - ./config/claude:/home/aiagent/.claude
+      - ./config/codex:/home/aiagent/.codex
       - ~/.ssh:/home/aiagent/.ssh:ro
       - projects:/home/aiagent/projects
     working_dir: /home/aiagent/workspace

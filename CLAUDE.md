@@ -29,6 +29,10 @@ This is a Docker-based AI development environment that provides a containerized 
 │   │   ├── settings.json  # Gemini CLI settings (auth, theme, MCP servers)
 │   │   ├── instructions.txt # Global system prompt for Gemini
 │   │   └── setup-gemini.sh # Quick setup script for aliases
+│   ├── codex/             # OpenAI Codex CLI configuration
+│   │   ├── config.toml    # Codex CLI main configuration (model, behavior, etc.)
+│   │   ├── instructions.txt # Global system prompt for Codex
+│   │   └── setup-codex.sh # Quick setup script for aliases
 │   └── ssh/               # SSH keys directory
 └── workspace/             # Shared workspace (host ↔ container)
 ```
@@ -114,6 +118,37 @@ For quick setup, run the initialization script:
 bash ~/.gemini/setup-gemini.sh
 ```
 
+### Codex CLI Configuration
+
+Codex CLI has dedicated global configuration mounted at `~/.codex/`:
+
+- **Main Config**: `~/.codex/config.toml` - Main configuration with model settings, behavior options, and API settings
+- **Instructions**: `~/.codex/instructions.txt` - Global system prompt for consistent AI behavior
+- **Usage**: `codex --config ~/.codex/config.toml --instructions ~/.codex/instructions.txt`
+
+Configuration features:
+- Model selection and parameters (temperature, max_tokens)
+- Output format preferences (markdown, line numbers)
+- Approval modes (auto, suggest, manual)
+- Default instructions file path
+
+Create convenient aliases for Codex CLI:
+```bash
+alias cx='codex'
+alias cxhat='codex --instructions ~/.codex/instructions.txt'
+alias cxconfig='codex --config ~/.codex/config.toml'
+```
+
+For quick setup, run the initialization script:
+```bash
+bash ~/.codex/setup-codex.sh
+```
+
+Convenience functions available after setup:
+- `cxanalyze <file>` - Analyze code file with instructions
+- `cxrefactor <file> [prompt]` - Refactor code with optional custom prompt
+- `cxexplain <file>` - Get detailed code explanation
+
 ## Environment Configuration
 
 The project uses environment variables for configuration:
@@ -140,8 +175,9 @@ Pre-configured Git settings include:
 ## File Persistence
 
 - `./workspace/` - Shared workspace between host and container
-- `./config/` - Configuration files including Git, Claude Code, and Gemini settings
+- `./config/` - Configuration files including Git, Claude Code, Gemini, and Codex settings
 - `./config/claude/` - Claude Code global configuration (mounted to `~/.claude/`)
 - `./config/gemini/` - Gemini CLI global configuration (mounted to `~/.gemini/`)
+- `./config/codex/` - Codex CLI global configuration (mounted to `~/.codex/`)
 - `~/.ssh` - SSH keys mounted read-only from host
 - `projects` - Named volume for persistent project data
