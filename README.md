@@ -73,6 +73,9 @@ AI 開發助手容器，整合多個 CLI 工具（如 Codex、Gemini、Claude、
    
    # 設定 Gemini CLI 別名
    bash ~/.gemini/setup-gemini.sh
+   
+   # 設定 Codex CLI 別名
+   bash ~/.codex/setup-codex.sh
    ```
 
 ### 檔案結構
@@ -95,6 +98,10 @@ AI 開發助手容器，整合多個 CLI 工具（如 Codex、Gemini、Claude、
 │   │   ├── settings.json  # Gemini 設定檔
 │   │   ├── instructions.txt # Gemini 系統提示
 │   │   └── setup-gemini.sh # Gemini 設定腳本
+│   ├── codex/             # OpenAI Codex CLI 配置
+│   │   ├── config.toml    # Codex 主配置檔 (模型、行為等)
+│   │   ├── instructions.txt # Codex 系統提示
+│   │   └── setup-codex.sh # Codex 設定腳本
 │   └── ssh/               # SSH金鑰目錄
 └── workspace/             # 工作目錄 (掛載到容器內)
 ```
@@ -104,7 +111,7 @@ AI 開發助手容器，整合多個 CLI 工具（如 Codex、Gemini、Claude、
 - **多版本支援**: 可透過環境變數指定 Node.js 版本
 - **資料持久化**: 工作目錄和設定檔案會持久化保存
 - **安全性**: 使用非 root 使用者執行容器
-- **全域配置**: 支援 Claude Code 與 Gemini CLI 的全域設定管理
+- **全域配置**: 支援 Claude Code、Gemini CLI 與 Codex CLI 的全域設定管理
 - **便利別名**: 預設提供常用 AI 工具的快捷指令
 
 ### AI 工具使用
@@ -125,9 +132,17 @@ gemini chat                   # 開始對話
 gchat                         # 使用預設指令的聊天 (需先執行 setup-gemini.sh)
 ```
 
-#### 其他工具
+#### Codex CLI
 ```bash
 codex                         # OpenAI Codex CLI
+cx                            # codex 的簡短別名 (需先執行 setup-codex.sh)
+cxanalyze <file>              # 分析代碼文件
+cxrefactor <file>             # 重構代碼
+cxexplain <file>              # 解釋代碼
+```
+
+#### 其他工具
+```bash
 grok                          # Grok CLI
 ```
 

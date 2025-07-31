@@ -16,7 +16,7 @@
     "node": "/usr/bin/node",
     "npm": "/usr/bin/npm"
   },
-  "default_model": "claude-3-sonnet-20241022",
+  "default_model": "claude-sonnet-4-0",
   "telemetry_opt_out": true,
   "enable_experimental": true
 }
