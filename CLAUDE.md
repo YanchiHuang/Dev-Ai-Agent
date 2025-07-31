@@ -20,6 +20,10 @@ This is a Docker-based AI development environment that provides a containerized 
 ├── docker-compose.yml      # Service orchestration
 ├── config/
 │   ├── gitconfig          # Git configuration with aliases
+│   ├── gemini/            # Gemini CLI configuration
+│   │   ├── settings.json  # Gemini CLI settings (auth, theme, MCP servers)
+│   │   ├── instructions.txt # Global system prompt for Gemini
+│   │   └── setup-gemini.sh # Quick setup script for aliases
 │   └── ssh/               # SSH keys directory
 └── workspace/             # Shared workspace (host ↔ container)
 ```
@@ -61,6 +65,24 @@ The container includes these pre-installed AI CLI tools:
 
 All tools require their respective API keys to be set in the `.env` file.
 
+### Gemini CLI Configuration
+
+Gemini CLI has dedicated global configuration mounted at `~/.gemini/`:
+
+- **Settings**: `~/.gemini/settings.json` - CLI behavior, auth type, and MCP server configurations
+- **Instructions**: `~/.gemini/instructions.txt` - Global system prompt for consistent AI behavior
+- **Usage**: `gemini chat --instructions ~/.gemini/instructions.txt`
+
+Create convenient alias for Gemini with pre-loaded instructions:
+```bash
+alias gchat='gemini chat --instructions ~/.gemini/instructions.txt'
+```
+
+For quick setup, run the initialization script:
+```bash
+bash ~/.gemini/setup-gemini.sh
+```
+
 ## Environment Configuration
 
 The project uses environment variables for configuration:
@@ -87,6 +109,7 @@ Pre-configured Git settings include:
 ## File Persistence
 
 - `./workspace/` - Shared workspace between host and container
-- `./config/` - Configuration files
+- `./config/` - Configuration files including Git and Gemini settings
+- `./config/gemini/` - Gemini CLI global configuration (mounted to `~/.gemini/`)
 - `~/.ssh` - SSH keys mounted read-only from host
 - `projects` - Named volume for persistent project data

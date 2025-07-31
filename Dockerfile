@@ -40,10 +40,10 @@ RUN useradd -m -s /bin/bash aiagent \
 USER aiagent
 WORKDIR /home/aiagent
 
-# 建立 config、workspace、ssh、projects 目錄並設定適當權限
-RUN mkdir -p /home/aiagent/config /home/aiagent/workspace /home/aiagent/.ssh /home/aiagent/projects \
+# 建立 config、workspace、ssh、projects、gemini 目錄並設定適當權限
+RUN mkdir -p /home/aiagent/config /home/aiagent/workspace /home/aiagent/.ssh /home/aiagent/projects /home/aiagent/.gemini \
     && chmod 700 /home/aiagent/.ssh \
-    && chmod 755 /home/aiagent/config /home/aiagent/workspace /home/aiagent/projects
+    && chmod 755 /home/aiagent/config /home/aiagent/workspace /home/aiagent/projects /home/aiagent/.gemini
 
 # 複製 gitconfig 設定檔
 COPY config/gitconfig /home/aiagent/.gitconfig
