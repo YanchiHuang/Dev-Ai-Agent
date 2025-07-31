@@ -1,0 +1,14 @@
+{
+  "default_model": "claude-3-sonnet-20241022",
+  "instructions_file": "~/.claude/default_instructions.md",
+  "editor": "code",
+  "telemetry_opt_out": true,
+  "enable_experimental": true,
+  "theme": "dark",
+  "tool_paths": {
+    "python": "/usr/bin/python3",
+    "node": "/usr/bin/node",
+    "npm": "/usr/bin/npm",
+    "git": "/usr/bin/git"
+  }
+}

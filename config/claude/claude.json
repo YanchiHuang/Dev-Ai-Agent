@@ -1,0 +1,22 @@
+{
+  "projects": {
+    "/home/aiagent/workspace": {
+      "model": "claude-3-sonnet-20241022",
+      "instructions_file": "/home/aiagent/workspace/.claude/instructions.md"
+    },
+    "/home/aiagent/projects": {
+      "model": "claude-3-sonnet-20241022",
+      "instructions_file": "/home/aiagent/projects/.claude/instructions.md"
+    }
+  },
+  "tool_paths": {
+    "python": "/usr/bin/python3",
+    "curl": "/usr/bin/curl",
+    "git": "/usr/bin/git",
+    "node": "/usr/bin/node",
+    "npm": "/usr/bin/npm"
+  },
+  "default_model": "claude-3-sonnet-20241022",
+  "telemetry_opt_out": true,
+  "enable_experimental": true
+}

@@ -20,6 +20,11 @@ This is a Docker-based AI development environment that provides a containerized 
 ├── docker-compose.yml      # Service orchestration
 ├── config/
 │   ├── gitconfig          # Git configuration with aliases
+│   ├── claude/            # Claude Code global configuration
+│   │   ├── settings.json  # Claude Code user settings (model, editor, etc.)
+│   │   ├── claude.json    # Claude Code main config (projects mapping)
+│   │   ├── default_instructions.md # Global system prompt for Claude Code
+│   │   └── setup-claude.sh # Quick setup script for aliases
 │   ├── gemini/            # Gemini CLI configuration
 │   │   ├── settings.json  # Gemini CLI settings (auth, theme, MCP servers)
 │   │   ├── instructions.txt # Global system prompt for Gemini
@@ -65,6 +70,32 @@ The container includes these pre-installed AI CLI tools:
 
 All tools require their respective API keys to be set in the `.env` file.
 
+### Claude Code Configuration
+
+Claude Code has dedicated global configuration mounted at `~/.claude/`:
+
+- **Main Config**: `~/.claude/claude.json` - Top-level settings with project mappings and global preferences
+- **User Settings**: `~/.claude/settings.json` - User-level preferences (model, editor, tools)
+- **Instructions**: `~/.claude/default_instructions.md` - Global system prompt for consistent AI behavior
+- **Usage**: `claude chat --instructions ~/.claude/default_instructions.md`
+
+Configuration priority (highest to lowest):
+1. `~/.claude/claude.json` (main config with project mappings)
+2. `~/.claude/settings.json` (user settings)
+3. Project-specific `.claude/` settings
+
+Create convenient aliases for Claude Code:
+```bash
+alias cc='claude'
+alias cchat='claude chat'
+alias cchelp='claude chat --instructions ~/.claude/default_instructions.md'
+```
+
+For quick setup, run the initialization script:
+```bash
+bash ~/.claude/setup-claude.sh
+```
+
 ### Gemini CLI Configuration
 
 Gemini CLI has dedicated global configuration mounted at `~/.gemini/`:
@@ -109,7 +140,8 @@ Pre-configured Git settings include:
 ## File Persistence
 
 - `./workspace/` - Shared workspace between host and container
-- `./config/` - Configuration files including Git and Gemini settings
+- `./config/` - Configuration files including Git, Claude Code, and Gemini settings
+- `./config/claude/` - Claude Code global configuration (mounted to `~/.claude/`)
 - `./config/gemini/` - Gemini CLI global configuration (mounted to `~/.gemini/`)
 - `~/.ssh` - SSH keys mounted read-only from host
 - `projects` - Named volume for persistent project data
