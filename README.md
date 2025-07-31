@@ -65,6 +65,16 @@ AI 開發助手容器，整合多個 CLI 工具（如 Codex、Gemini、Claude、
    docker-compose exec aiagent bash
    ```
 
+5. **設定 AI 工具別名 (可選)**
+
+   ```bash
+   # 設定 Claude Code 別名
+   bash ~/.claude/setup-claude.sh
+   
+   # 設定 Gemini CLI 別名
+   bash ~/.gemini/setup-gemini.sh
+   ```
+
 ### 檔案結構
 
 ```txt
@@ -76,7 +86,16 @@ AI 開發助手容器，整合多個 CLI 工具（如 Codex、Gemini、Claude、
 ├── USAGE.md               # 詳細使用說明
 ├── config/                # 設定檔目錄
 │   ├── gitconfig          # Git設定檔
-│   ├── ssh/               # SSH金鑰目錄
+│   ├── claude/            # Claude Code 全域配置
+│   │   ├── settings.json  # 使用者設定 (模型、編輯器等)
+│   │   ├── claude.json    # 主配置 (專案映射)
+│   │   ├── default_instructions.md # 全域系統提示
+│   │   └── setup-claude.sh # 快速設定腳本
+│   ├── gemini/            # Gemini CLI 配置
+│   │   ├── settings.json  # Gemini 設定檔
+│   │   ├── instructions.txt # Gemini 系統提示
+│   │   └── setup-gemini.sh # Gemini 設定腳本
+│   └── ssh/               # SSH金鑰目錄
 └── workspace/             # 工作目錄 (掛載到容器內)
 ```
 
@@ -85,6 +104,32 @@ AI 開發助手容器，整合多個 CLI 工具（如 Codex、Gemini、Claude、
 - **多版本支援**: 可透過環境變數指定 Node.js 版本
 - **資料持久化**: 工作目錄和設定檔案會持久化保存
 - **安全性**: 使用非 root 使用者執行容器
+- **全域配置**: 支援 Claude Code 與 Gemini CLI 的全域設定管理
+- **便利別名**: 預設提供常用 AI 工具的快捷指令
+
+### AI 工具使用
+
+進入容器後，可使用以下 AI CLI 工具：
+
+#### Claude Code
+```bash
+claude chat                    # 開始對話
+claude edit                    # 編輯模式
+cchelp                        # 使用預設指令的聊天 (需先執行 setup-claude.sh)
+cc                            # claude 的簡短別名
+```
+
+#### Gemini CLI
+```bash
+gemini chat                   # 開始對話
+gchat                         # 使用預設指令的聊天 (需先執行 setup-gemini.sh)
+```
+
+#### 其他工具
+```bash
+codex                         # OpenAI Codex CLI
+grok                          # Grok CLI
+```
 
 詳細使用說明請參考 `USAGE.md` 檔案。
 
