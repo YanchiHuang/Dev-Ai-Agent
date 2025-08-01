@@ -17,4 +17,36 @@ config/ssh/*
 # OS / 編輯器暫存檔
 .DS_Store
 Thumbs.db
-.idea/
+.idea
+
+# claude
+# 忽略 Claude 的設定檔
+config/claude/*
+# 保留 claude.json 檔案
+!config/claude/claude.json
+# 保留 settings.json
+!config/claude/settings.json
+# 保留 default_instructions.md
+!config/claude/default_instructions.md
+# 保留 setup-claude.sh
+!config/claude/setup-claude.sh
+
+# gemini
+# 忽略 Gemini 的設定檔
+config/gemini/*
+# 保留 settings.json
+!config/gemini/settings.json
+# 保留 instructions.md
+!config/gemini/instructions.md
+# 保留 setup-gemini.sh
+!config/gemini/setup-gemini.sh
+
+# codex
+# 忽略 Codex 的設定檔
+config/codex/*
+# 保留 config.toml
+!config/codex/config.toml
+# 保留 instructions.md
+!config/codex/instructions.md
+# 保留 setup-codex.sh
+!config/codex/setup-codex.sh
