@@ -29,6 +29,8 @@ AI 開發助手容器，整合多個 CLI 工具（如 Codex、Gemini、Claude、
 - codex-cli：`npm install -g @openai/codex`
 - gemini-cli：`npm install -g @google/gemini-cli`
 - claude-code：`npm install -g @anthropic-ai/claude-code`
+- SuperClaude Framework 安裝腳本：
+  - `config/claude/setup-SuperClaude.sh` 提供一鍵安裝 [SuperClaude Framework](https://github.com/SuperClaude-Org/SuperClaude_Framework) 的自動化腳本，支援 Linux/Docker 環境，內建 uv/pip 虛擬環境建立、專案下載、依賴安裝與 profile 快速設定，適合開發者快速部署與升級。
 - grok-cli：`npm install -g @vibe-kit/grok-cli`
 
 ## git 設定
@@ -70,10 +72,10 @@ AI 開發助手容器，整合多個 CLI 工具（如 Codex、Gemini、Claude、
    ```bash
    # 設定 Claude Code 別名
    bash ~/.claude/setup-claude.sh
-   
+
    # 設定 Gemini CLI 別名
    bash ~/.gemini/setup-gemini.sh
-   
+
    # 設定 Codex CLI 別名
    bash ~/.codex/setup-codex.sh
    ```
@@ -119,6 +121,7 @@ AI 開發助手容器，整合多個 CLI 工具（如 Codex、Gemini、Claude、
 進入容器後，可使用以下 AI CLI 工具：
 
 #### Claude Code
+
 ```bash
 claude chat                    # 開始對話
 claude edit                    # 編輯模式
@@ -127,12 +130,14 @@ cc                            # claude 的簡短別名
 ```
 
 #### Gemini CLI
+
 ```bash
 gemini chat                   # 開始對話
 gchat                         # 使用預設指令的聊天 (需先執行 setup-gemini.sh)
 ```
 
 #### Codex CLI
+
 ```bash
 codex                         # OpenAI Codex CLI
 cx                            # codex 的簡短別名 (需先執行 setup-codex.sh)
@@ -142,6 +147,7 @@ cxexplain <file>              # 解釋代碼
 ```
 
 #### 其他工具
+
 ```bash
 grok                          # Grok CLI
 ```
