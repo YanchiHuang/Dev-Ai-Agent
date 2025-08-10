@@ -1,22 +1,104 @@
-# OpenAI Codex CLI Configuration
-# This configuration is mounted to ~/.codex/config.toml in the container
+# ==============================
+# Codex CLI Configuration
+# 依據 openai/codex README 與 config 說明
+# ==============================
 
-# Model settings
-model = "gpt-4"                      # Default model to use
-temperature = 0.7                    # Creativity level (0.0-2.0)
-max_tokens = 2048                   # Maximum response length
+# --- 全域常用設定 ---
 
-# Behavior settings
-disable_response_storage = true      # Don't store responses locally
-approval_mode = "suggest"           # Options: "auto", "suggest", "manual"
+# 預設啟用的 profile 名稱（必須是下面 profiles 區塊裡定義的）
+profile = "vllm_oss"
 
-# Default instructions file path (relative to this config)
-instructions = "./instructions.txt"
+# 若你在 OpenAI 組織需「零資料保留（ZDR）」或避免寫入回應快取，可啟用此項
+# 來源：README「Zero data retention (ZDR) usage」
+disable_response_storage = false
 
-# API settings (can be overridden by environment variables)
-# provider_API_KEY will use OPENAI_API_KEY environment variable
-# provider_BASE_URL = "https://api.openai.com/v1"  # Custom API endpoint if needed
+# 預設核准與沙箱策略（可由 profile 覆寫）
+# 來源：README「Fine-tuning in `config.toml`」
+approval_policy = "on-request"       # 可選："untrusted"（更嚴）、"on-request"（全自動）
+sandbox_mode    = "workspace-write"  # 可選："read-only", "workspace-write"
 
-# Output preferences
-output_format = "markdown"          # Options: "plain", "markdown"
-show_line_numbers = true           # Show line numbers for code blocks
+[sandbox_workspace_write]
+# 可選：允許在 workspace-write 模式下進行網路存取
+# 來源：README「Fine-tuning in `config.toml`」
+network_access = false
+
+# ==============================
+# Provider 定義
+# ==============================
+
+# （Ollama）— 需自訂一個符合 OpenAI Chat/Responses 相容介面的 provider
+# 來源：README「Use --profile to use other models」
+[model_providers.ollama]
+name     = "ollama"
+base_url = "http://192.168.11.101:11434/v1"
+# 若你的相容服務需要 Authorization: Bearer <KEY>，可加上 env_key（舉例見 README）
+# env_key = "YOUR_OLLAMA_LIKE_API_KEY_ENV"
+
+# 覆寫內建的「oss」provider 以指向同一台遠端 Ollama（供 gpt-oss:* 使用）
+# 來源：README「Point Codex at your own OSS host」
+[model_providers.oss]
+name     = "Open Source"
+base_url = "http://192.168.11.101:11434/v1"
+
+# ==============================
+# vLLM（OpenAI 相容）Provider
+# ==============================
+# 這會把 Codex 的流量指向你的 vLLM OpenAI-compatible server。
+# 若你的 vLLM 需要 API 金鑰，可將 env_key 改成你環境變數名稱，Codex 會自動用 Authorization: Bearer <KEY> 帶出。
+[model_providers.vllm]
+name     = "vllm"
+base_url = "http://192.168.11.101:8000/v1"
+
+# env_key = "VLLM_API_KEY"  # 若你的 vLLM gateway 需要驗證，取消註解並設定環境變數
+# ==============================
+# Profiles（情境快速切換）
+# 用 `codex --profile <name>` 啟用；可同時覆寫 model_provider / model / 策略
+# 來源：README「Use --profile to use other models」
+# ==============================
+
+# 1) OpenAI（預設雲端）— 僅指定 model，即使用預設的 OpenAI provider
+[profiles.openai_o4mini]
+model = "o4-mini"          # README 提及預設即為 o4-mini；也可改為 "gpt-4.1"
+approval_policy = "on-request"
+sandbox_mode    = "workspace-write"
+
+# 2) OpenAI（另一個範例模型）
+[profiles.openai_gpt41]
+model = "gpt-4.1"
+approval_policy = "on-request"
+sandbox_mode    = "workspace-write"
+
+# 3) 內建 OSS provider + gpt-oss 系列（正確搭配方式）
+[profiles.oss_gptoss_20b]
+model_provider = "oss"
+model = "gpt-oss:20b"      # README 中列示的 `--oss` 模型選項之一
+approval_policy = "on-request"
+sandbox_mode    = "workspace-write"
+
+# 4) Ollama（使用 Ollama 實際模型名稱，例如 "mistral"）
+[profiles.ollama_mistral]
+model_provider = "ollama"
+model = "mistral"
+approval_policy = "on-request"
+sandbox_mode    = "workspace-write"
+
+# 對應 vLLM 的 profile（把 model 換成你在 vLLM 啟動/掛載的模型 ID）
+# 你可以先用下面指令確認模型 ID：
+#   curl http://192.168.11.102:8000/v1/models
+[profiles.vllm_oss]
+model_provider = "vllm"
+model = "openai/gpt-oss-20b"   # 例如："meta-llama/Meta-Llama-3.1-8B-Instruct" 或你實際掛載的名稱
+
+
+# ==============================
+# MCP Servers
+# 來源：config.md「MCP servers」段落
+# ==============================
+
+# [mcp_servers."sequential-thinking"]
+# command = "npx"
+# args = ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+
+# [mcp_servers.context7]
+# command = "npx"
+# args = ["-y", "@upstash/context7-mcp"]

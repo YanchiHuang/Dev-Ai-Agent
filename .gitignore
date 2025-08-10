@@ -46,7 +46,7 @@ config/gemini/*
 config/codex/*
 # 保留 config.toml
 !config/codex/config.toml
-# 保留 instructions.md
-!config/codex/instructions.md
+# 保留 AGENTS.md
+!config/codex/AGENTS.md
 # 保留 setup-codex.sh
 !config/codex/setup-codex.sh
