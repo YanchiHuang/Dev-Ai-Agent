@@ -48,10 +48,6 @@ RUN mkdir -p /home/aiagent/config /home/aiagent/workspace /home/aiagent/.ssh /ho
 # 複製 gitconfig 設定檔
 COPY config/gitconfig /home/aiagent/.gitconfig
 
-# 複製並安裝 SuperClaude 腳本
-COPY config/claude/setup-SuperClaude.sh /home/aiagent/setup-SuperClaude.sh
-RUN chmod +x /home/aiagent/setup-SuperClaude.sh
-
 # 安裝 NVM (最新版本)
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 
@@ -75,6 +71,11 @@ RUN echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc \
     && echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> ~/.profile \
     && echo 'nvm use 22 > /dev/null 2>&1' >> ~/.profile \
     && echo 'export PATH="$NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH"' >> ~/.profile
+
+# 複製並安裝 SuperClaude 腳本
+COPY --chmod=755 config/claude/setup-SuperClaude.sh /home/aiagent/setup-SuperClaude.sh
+RUN bash -c "source /home/aiagent/.nvm/nvm.sh && nvm use 22 && export PATH=\"\$NVM_DIR/versions/node/v\$NODE_VERSION/bin:\$PATH\" && /home/aiagent/setup-SuperClaude.sh"
+
 
 # 暴露常用端口（可選）
 EXPOSE 3000 8000 8080

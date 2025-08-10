@@ -9,7 +9,7 @@ set -e  # 若有錯誤立即停止
 set -o pipefail
 
 # ====== 參數設定 ======
-INSTALL_DIR="/opt/superclaude"
+INSTALL_DIR="$HOME/superclaude"
 REPO_URL="https://github.com/SuperClaude-Org/SuperClaude_Framework.git"
 USE_UV=true     # 設為 false 則使用 pip
 PROFILE="developer"  # 可改成 default / developer / 其他自訂
@@ -51,7 +51,7 @@ fi
 
 # ====== 執行安裝程序 ======
 echo "[4/5] 執行 SuperClaude 安裝程序..."
-python3 -m SuperClaude install --profile "$PROFILE"
+python3 -m SuperClaude install --profile "$PROFILE" --yes
 
 # ====== 安裝完成確認 ======
 echo "[5/5] 驗證安裝結果..."
