@@ -70,7 +70,7 @@ RUN set -euxo pipefail \
     && nvm install "$NODE_VERSION" \
     && nvm alias default "$NODE_VERSION" \
     && nvm use "$NODE_VERSION" \
-    && npm install -g @openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli \
+    && npm install -g @openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli @pimzino/claude-code-spec-workflow \
     && echo "Node $(node -v) 已安裝"
 
 # 將 Node 加入全域 PATH（建置期及執行期都生效）

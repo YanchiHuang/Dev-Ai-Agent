@@ -32,6 +32,7 @@ AI 開發助手容器，整合多個 CLI 工具（如 Codex、Gemini、Claude、
 - SuperClaude Framework 安裝腳本：
   - `config/claude/setup-SuperClaude.sh` 提供一鍵安裝 [SuperClaude Framework](https://github.com/SuperClaude-Org/SuperClaude_Framework) 的自動化腳本，支援 Linux/Docker 環境，內建 uv/pip 虛擬環境建立、專案下載、依賴安裝與 profile 快速設定，適合開發者快速部署與升級。
 - grok-cli：`npm install -g @vibe-kit/grok-cli`
+- Claude Code Spec Workflow：`npm install -g @pimzino/claude-code-spec-workflow` （提供規格 / Bug 工作流、自動化任務與 Dashboard）
 
 ## git 設定
 
@@ -148,9 +149,41 @@ cxexplain <file>              # 解釋代碼
 
 #### 其他工具
 
-```bash
+````bash
 grok                          # Grok CLI
+claude-code-spec-workflow     # 規格/bug workflow 主指令 (已全域安裝)
+npx -p @pimzino/claude-code-spec-workflow claude-spec-dashboard   # 啟動即時 Dashboard
+
+#### Claude Code Spec Workflow 工作流快速示例
+
+```bash
+# 一次性在專案目錄建立 .claude 結構
+claude-code-spec-workflow
+
+# 建立 Steering 文件 (product.md / tech.md / structure.md)
+claude
+/spec-steering-setup
+
+# 建立新功能規格
+/spec-create user-auth "User auth system"
+
+# 執行第一個任務 (task 1)
+/spec-execute 1 user-auth
+
+# 啟動 Dashboard (可視化追蹤)
+npx -p @pimzino/claude-code-spec-workflow claude-spec-dashboard
+````
+
+提供 `config/claude/setup-spec-workflow.sh` 腳本可追加常用 alias：
+
+```bash
+bash ~/.claude/setup-spec-workflow.sh
+spec-get-steering             # 一次載入 steering context
+spec-get-spec feature-name    # 載入特定功能規格 context
+spec-dash                     # 啟動 Dashboard
 ```
+
+````
 
 詳細使用說明請參考 `USAGE.md` 檔案。
 
@@ -164,4 +197,4 @@ grok                          # Grok CLI
 
 ```bash
 docker-compose build --no-cache
-```
+````
