@@ -8,9 +8,12 @@ LABEL org.opencontainers.image.licenses=AGPL-3.0
 ENV DEBIAN_FRONTEND=noninteractive
 ENV NODE_VERSION=22
 ENV NVM_DIR=/home/aiagent/.nvm
+# SuperClaude 安裝方式: 可選 pipx | uv | pip | npm (可用 build-arg 覆蓋)
+ARG SUPERCLAUDE_INSTALLER=pipx
+ENV SUPERCLAUDE_INSTALLER=${SUPERCLAUDE_INSTALLER}
 
 # 更新套件列表並安裝基本工具
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
     zstd \
@@ -21,8 +24,15 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     python3-venv \
+    python3-distutils \
+    build-essential \
+    pkg-config \
+    libssl-dev \
+    libffi-dev \
+    pipx \
     vim \
-    powerline
+    powerline \
+    && rm -rf /var/lib/apt/lists/*
 
 # 安裝 GitHub CLI
 RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
@@ -51,8 +61,20 @@ COPY config/gitconfig /home/aiagent/.gitconfig
 # 安裝 NVM (最新版本)
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 
-# 安裝 Node.js 22 和 AI Agent 工具
-RUN bash -c "source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION && nvm use $NODE_VERSION && nvm alias default $NODE_VERSION && npm install -g @openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli"
+# 切換 SHELL 為 bash -lc 以確保後續 RUN 可以載入 nvm 相關環境（減少重複 source 指令）
+SHELL ["/bin/bash","-lc"]
+
+# 安裝 Node.js 22 和 AI Agent 工具，並設定全域 PATH
+RUN set -euxo pipefail \
+    && source "$NVM_DIR/nvm.sh" \
+    && nvm install "$NODE_VERSION" \
+    && nvm alias default "$NODE_VERSION" \
+    && nvm use "$NODE_VERSION" \
+    && npm install -g @openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli \
+    && echo "Node $(node -v) 已安裝"
+
+# 將 Node 加入全域 PATH（建置期及執行期都生效）
+ENV PATH="${NVM_DIR}/versions/node/v${NODE_VERSION}/bin:${PATH}"
 
 # 設定預設工作目錄
 WORKDIR /home/aiagent/workspace
@@ -74,7 +96,10 @@ RUN echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc \
 
 # 複製並安裝 SuperClaude 腳本
 COPY --chmod=755 config/claude/setup-SuperClaude.sh /home/aiagent/setup-SuperClaude.sh
-RUN bash -c "source /home/aiagent/.nvm/nvm.sh && nvm use 22 && export PATH=\"\$NVM_DIR/versions/node/v\$NODE_VERSION/bin:\$PATH\" && /home/aiagent/setup-SuperClaude.sh"
+RUN set -euxo pipefail \
+    && echo "[SuperClaude] 使用 Python: $(python3 --version)" \
+    && echo "[SuperClaude] 使用 Node: $(node --version)" \
+    && /home/aiagent/setup-SuperClaude.sh || (echo "SuperClaude 安裝腳本失敗，列出日誌後終止" && cat /home/aiagent/superclaude_install.log || true && exit 1)
 
 
 # 暴露常用端口（可選）
