@@ -15,6 +15,7 @@
     "github.copilot",
     "github.copilot-chat",
     "anthropic.claude-code",
+    "openai.chatgpt",
     // 開發體驗增強
     "vscode-icons-team.vscode-icons",
     "usernamehw.errorlens",
