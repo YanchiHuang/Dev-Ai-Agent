@@ -6,7 +6,7 @@
 # --- 全域常用設定 ---
 
 # 預設啟用的 profile 名稱（必須是下面 profiles 區塊裡定義的）
-profile = "vllm_oss"
+# profile = "vllm_oss"
 
 # 若你在 OpenAI 組織需「零資料保留（ZDR）」或避免寫入回應快取，可啟用此項
 # 來源：README「Zero data retention (ZDR) usage」
