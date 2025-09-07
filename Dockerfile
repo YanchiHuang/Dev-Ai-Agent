@@ -1,138 +1,209 @@
-FROM debian:bookworm-slim
+# syntax=docker/dockerfile:1.7-labs
+######################################################################
+# Multi-stage Build with Caching Optimizations for Dev-Ai-Agent       #
+######################################################################
 
+ARG BASE_IMAGE=debian:bookworm-slim
+ARG NODE_VERSION=22
+ARG SUPERCLAUDE_INSTALLER=pipx
+ARG NVM_VERSION=v0.40.1
+ARG SPEC_KIT_REPO=git+https://github.com/github/spec-kit.git
+ARG GLOBAL_NPM_PACKAGES="@openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli @pimzino/claude-code-spec-workflow"
+
+######################################################################
+# Stage 1: base-apt (system packages only; reproducible & cached)     #
+######################################################################
+FROM ${BASE_IMAGE} AS base-apt
+ARG NODE_VERSION
+ARG SUPERCLAUDE_INSTALLER
+ARG NVM_VERSION
+ARG SPEC_KIT_REPO
+ARG GLOBAL_NPM_PACKAGES
 LABEL org.opencontainers.image.source=https://github.com/YanchiHuang/Dev-Ai-Agent
-LABEL org.opencontainers.image.description="Dev-Ai-Agent 是一款專為 AI 開發者打造的 Docker 容器，整合 Codex / Gemini / Claude AI CLI 工具箱"
+LABEL org.opencontainers.image.description="Dev-Ai-Agent multi-stage 基底 (system dependencies)"
 LABEL org.opencontainers.image.licenses=AGPL-3.0
 
-# 設定環境變數
 ENV DEBIAN_FRONTEND=noninteractive
-ENV NODE_VERSION=22
-ENV NVM_DIR=/home/aiagent/.nvm
-# SuperClaude 安裝方式: 可選 pipx | uv | pip | npm (可用 build-arg 覆蓋)
-ARG SUPERCLAUDE_INSTALLER=pipx
-ENV SUPERCLAUDE_INSTALLER=${SUPERCLAUDE_INSTALLER}
 
-# 更新套件列表並安裝基本工具
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    curl \
-    zstd \
-    ca-certificates \
-    gnupg \
-    lsb-release \
-    sudo \
-    python3 \
-    python3-pip \
-    python3-venv \
-    python3-distutils \
-    build-essential \
-    pkg-config \
-    libssl-dev \
-    libffi-dev \
-    pipx \
-    vim \
-    powerline \
-    && rm -rf /var/lib/apt/lists/*
+# 使用 BuildKit cache mount 加速 apt
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+    git curl zstd ca-certificates gnupg lsb-release sudo \
+    python3 python3-pip python3-venv python3-distutils pipx \
+    build-essential pkg-config libssl-dev libffi-dev \
+    vim powerline; \
+    rm -rf /var/lib/apt/lists/*
 
-# 安裝 GitHub CLI
-RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
-    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-    && apt-get update \
-    && apt-get install -y gh \
-    && rm -rf /var/lib/apt/lists/*
+# 安裝 GitHub CLI (獨立層, 若無變更可被快取)
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    set -eux; \
+    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg; \
+    chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg; \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list; \
+    apt-get update; \
+    apt-get install -y gh; \
+    rm -rf /var/lib/apt/lists/*
 
-# 建立非 root 使用者
-RUN useradd -m -s /bin/bash aiagent \
+######################################################################
+# Stage 2: builder (install Node via NVM + global CLI tools + uv/spec) #
+######################################################################
+FROM base-apt AS builder
+ARG NODE_VERSION
+ARG SUPERCLAUDE_INSTALLER
+ARG NVM_VERSION
+ARG SPEC_KIT_REPO
+ARG GLOBAL_NPM_PACKAGES
+
+ENV NVM_DIR=/home/aiagent/.nvm \
+    NODE_VERSION=${NODE_VERSION} \
+    SUPERCLAUDE_INSTALLER=${SUPERCLAUDE_INSTALLER} \
+    SPEC_KIT_REPO=${SPEC_KIT_REPO}
+
+# 建立使用者 (固定 UID/GID=1000 以利 cache mount 權限設定)
+RUN groupadd -g 1000 aiagent || true \
+    && useradd -u 1000 -g 1000 -m -s /bin/bash aiagent \
     && echo 'aiagent ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-
-# 切換到 aiagent 使用者
 USER aiagent
 WORKDIR /home/aiagent
 
-# 建立 config、workspace、ssh、projects、gemini 目錄並設定適當權限
-RUN mkdir -p /home/aiagent/config /home/aiagent/workspace /home/aiagent/.ssh /home/aiagent/projects /home/aiagent/.gemini \
-    && chmod 700 /home/aiagent/.ssh \
-    && chmod 755 /home/aiagent/config /home/aiagent/workspace /home/aiagent/projects /home/aiagent/.gemini
+# 複製 gitconfig (可快取，若更動會單獨失效)
+COPY --chown=aiagent:aiagent config/gitconfig /home/aiagent/.gitconfig
 
-# 複製 gitconfig 設定檔
-COPY config/gitconfig /home/aiagent/.gitconfig
+# 建立目錄
+RUN mkdir -p config workspace .ssh projects .gemini bin \
+    && chmod 700 .ssh
 
-# 安裝 NVM (最新版本)
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
-
-# 切換 SHELL 為 bash -lc 以確保後續 RUN 可以載入 nvm 相關環境（減少重複 source 指令）
+# 安裝 NVM + Node + 全域 npm 套件 (分開層利於快取)
 SHELL ["/bin/bash","-lc"]
+RUN set -euxo pipefail; \
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh | bash; \
+    source "$NVM_DIR/nvm.sh"; \
+    nvm install ${NODE_VERSION}; \
+    nvm alias default ${NODE_VERSION}; \
+    nvm use ${NODE_VERSION}; \
+    npm install -g ${GLOBAL_NPM_PACKAGES}; \
+    npm cache clean --force; \
+    echo "[builder] Node $(node -v) 完成, npm global 安裝完成"
 
-# 安裝 Node.js 22 和 AI Agent 工具，並設定全域 PATH
-RUN set -euxo pipefail \
-    && source "$NVM_DIR/nvm.sh" \
-    && nvm install "$NODE_VERSION" \
-    && nvm alias default "$NODE_VERSION" \
-    && nvm use "$NODE_VERSION" \
-    && npm install -g @openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli @pimzino/claude-code-spec-workflow \
-    && echo "Node $(node -v) 已安裝"
+# 安裝 uv + 預熱 spec-kit (使用 cache mount 以加速 uv 重複建置)
+RUN --mount=type=cache,target=/home/aiagent/.cache/uv,uid=1000,gid=1000 \
+    set -euxo pipefail; \
+    curl -LsSf https://astral.sh/uv/install.sh | sh; \
+    export PATH="$HOME/.local/bin:$PATH"; \
+    "$HOME/.local/bin/uv" --version; \
+    echo '[spec-kit] 預熱 specify'; \
+    "$HOME/.local/bin/uvx" --from ${SPEC_KIT_REPO} specify --help >/dev/null; \
+    printf '#!/usr/bin/env bash\nexport PATH="$HOME/.local/bin:$PATH"\nexec uvx --from %s specify "$@"\n' "$SPEC_KIT_REPO" > /home/aiagent/bin/specify; \
+    chmod +x /home/aiagent/bin/specify; \
+    ln -s "$HOME/.local/bin/uv" /home/aiagent/bin/uv || true; \
+    ln -s "$HOME/.local/bin/uvx" /home/aiagent/bin/uvx || true; \
+    echo "alias /specify='specify'" >> ~/.bashrc; \
+    echo "alias /plan='specify plan'" >> ~/.bashrc; \
+    echo "alias /tasks='specify tasks'" >> ~/.bashrc; \
+    printf '%s\n%s\n%s\n%s\n%s\n' \
+    '# 快速建立新專案: specify init <project>' \
+    '# 既有資料夾初始化: specify init --here' \
+    '# 規格撰寫: /specify <描述>' \
+    '# 技術規劃: /plan <技術與架構>' \
+    '# 任務拆解: /tasks' > /home/aiagent/bin/spec-kit-notes.txt
 
-# 將 Node 加入全域 PATH（建置期及執行期都生效）
-ENV PATH="${NVM_DIR}/versions/node/v${NODE_VERSION}/bin:${PATH}"
-ENV PATH="/home/aiagent/.local/bin:/home/aiagent/bin:${PATH}"
+# Shell 環境設定 (僅一次; 可快取)
+RUN echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc \
+    && echo '[ -s "$NVM_DIR/nvm.sh" ] && \\ . "$NVM_DIR/nvm.sh"' >> ~/.bashrc \
+    && echo '[ -s "$NVM_DIR/bash_completion" ] && \\ . "$NVM_DIR/bash_completion"' >> ~/.bashrc \
+    && echo "nvm use ${NODE_VERSION} > /dev/null 2>&1" >> ~/.bashrc \
+    && echo 'export PATH="$NVM_DIR/versions/node/v'$NODE_VERSION'/bin:$HOME/.local/bin:$HOME/bin:$PATH"' >> ~/.bashrc \
+    && echo 'POWERLINE_SCRIPT=/usr/share/powerline/bindings/bash/powerline.sh' >> ~/.bashrc \
+    && echo 'if [ -f $POWERLINE_SCRIPT ]; then source $POWERLINE_SCRIPT; fi' >> ~/.bashrc \
+    && cp ~/.bashrc ~/.profile
 
-# 設定預設工作目錄
+# 複製 SuperClaude 安裝腳本 (保持在 builder 先執行以快取)
+COPY --chown=aiagent:aiagent --chmod=755 config/claude/setup-SuperClaude.sh /home/aiagent/setup-SuperClaude.sh
+RUN set -euxo pipefail; \
+    echo "[SuperClaude] Python: $(python3 --version)"; \
+    echo "[SuperClaude] Node: $(node --version)"; \
+    /home/aiagent/setup-SuperClaude.sh || (echo 'SuperClaude 安裝失敗 (builder 階段)'; cat /home/aiagent/superclaude_install.log || true; exit 1)
+
+######################################################################
+# Stage 3: final (copy only必要內容, 減少額外 cache/artifacts)           #
+######################################################################
+FROM ${BASE_IMAGE} AS final
+ARG NODE_VERSION
+ARG SUPERCLAUDE_INSTALLER
+ARG NVM_VERSION
+ARG SPEC_KIT_REPO
+ARG GLOBAL_NPM_PACKAGES
+LABEL org.opencontainers.image.source=https://github.com/YanchiHuang/Dev-Ai-Agent
+LABEL org.opencontainers.image.description="Dev-Ai-Agent 是一款專為 AI 開發者打造的容器 (multi-stage optimized)"
+LABEL org.opencontainers.image.licenses=AGPL-3.0
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    NVM_DIR=/home/aiagent/.nvm \
+    NODE_VERSION=${NODE_VERSION} \
+    SUPERCLAUDE_INSTALLER=${SUPERCLAUDE_INSTALLER}
+
+# 安裝 runtime 必要套件 (避免重新安裝所有建置工具，可視需求裁剪)
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+    git curl zstd ca-certificates gnupg lsb-release sudo \
+    python3 python3-pip python3-venv python3-distutils pipx \
+    vim powerline; \
+    rm -rf /var/lib/apt/lists/*
+
+# 建立使用者 (需與 builder 相同 UID/GID)
+RUN groupadd -g 1000 aiagent || true \
+    && useradd -u 1000 -g 1000 -m -s /bin/bash aiagent \
+    && echo 'aiagent ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+USER aiagent
+WORKDIR /home/aiagent
+
+# 從 builder 複製必要資源
+COPY --chown=aiagent:aiagent --from=builder /home/aiagent/.nvm /home/aiagent/.nvm
+COPY --chown=aiagent:aiagent --from=builder /home/aiagent/bin /home/aiagent/bin
+COPY --chown=aiagent:aiagent --from=builder /home/aiagent/.local/bin /home/aiagent/.local/bin
+COPY --chown=aiagent:aiagent --from=builder /home/aiagent/.bashrc /home/aiagent/.bashrc
+COPY --chown=aiagent:aiagent --from=builder /home/aiagent/.profile /home/aiagent/.profile
+COPY --chown=aiagent:aiagent --from=builder /home/aiagent/.gitconfig /home/aiagent/.gitconfig
+COPY --chown=aiagent:aiagent --from=builder /home/aiagent/superclaude_install.log /home/aiagent/superclaude_install.log
+COPY --chown=aiagent:aiagent --from=builder /home/aiagent/setup-SuperClaude.sh /home/aiagent/setup-SuperClaude.sh
+
+# 預設工作空間
+RUN mkdir -p workspace projects .ssh .gemini config
 WORKDIR /home/aiagent/workspace
 
-# 設定 bash 環境 (NVM, PATH, Powerline) - 同時支援互動式和非互動式 shell
-RUN echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc \
-    && echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> ~/.bashrc \
-    && echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' >> ~/.bashrc \
-    && echo 'nvm use 22 > /dev/null 2>&1' >> ~/.bashrc \
-    && echo 'export PATH="$NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH"' >> ~/.bashrc \
-    && echo 'export PATH="$HOME/.local/bin:$HOME/bin:$PATH"' >> ~/.bashrc \
-    && echo 'POWERLINE_SCRIPT=/usr/share/powerline/bindings/bash/powerline.sh' >> ~/.bashrc \
-    && echo 'if [ -f $POWERLINE_SCRIPT ]; then' >> ~/.bashrc \
-    && echo '  source $POWERLINE_SCRIPT' >> ~/.bashrc \
-    && echo 'fi' >> ~/.bashrc \
-    && echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.profile \
-    && echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> ~/.profile \
-    && echo 'nvm use 22 > /dev/null 2>&1' >> ~/.profile \
-    && echo 'export PATH="$NVM_DIR/versions/node/v$NODE_VERSION/bin:$HOME/.local/bin:$HOME/bin:$PATH"' >> ~/.profile
+ENV PATH="/home/aiagent/.nvm/versions/node/v${NODE_VERSION}/bin:/home/aiagent/.local/bin:/home/aiagent/bin:${PATH}"
 
-# ------------------------------------------------------------
-# 安裝 uv (Python 套件 / 執行環境管理工具) 並整合 spec-kit
-# ------------------------------------------------------------
-# 1. 安裝 uv (只需單一靜態 binary) 2. 預先快取 specify 指令環境
-# 3. 建立便利 wrapper 腳本，使用 "specify" 風格工作流：/specify /plan /tasks
-RUN set -euxo pipefail \
-    && mkdir -p /home/aiagent/bin \
-    && curl -LsSf https://astral.sh/uv/install.sh | sh \
-    && uv --version \
-    && echo '[spec-kit] 預熱 specify 指令 (下載相依資源)' \
-    && uvx --from git+https://github.com/github/spec-kit.git specify --help > /dev/null \
-    && printf '#!/usr/bin/env bash\nexec uvx --from git+https://github.com/github/spec-kit.git specify "$@"\n' > /home/aiagent/bin/specify \
-    && chmod +x /home/aiagent/bin/specify \
-    && echo '# 快速建立新專案: specify init <project>' > /home/aiagent/bin/spec-kit-notes.txt \
-    && echo '# 既有資料夾初始化: specify init --here' >> /home/aiagent/bin/spec-kit-notes.txt \
-    && echo '# 規格撰寫: /specify <描述>' >> /home/aiagent/bin/spec-kit-notes.txt \
-    && echo '# 技術規劃: /plan <技術與架構>' >> /home/aiagent/bin/spec-kit-notes.txt \
-    && echo '# 任務拆解: /tasks' >> /home/aiagent/bin/spec-kit-notes.txt \
-    && grep -q 'alias /specify=' ~/.bashrc || echo "alias /specify='specify'" >> ~/.bashrc \
-    && grep -q 'alias /plan=' ~/.bashrc || echo "alias /plan='specify plan'" >> ~/.bashrc \
-    && grep -q 'alias /tasks=' ~/.bashrc || echo "alias /tasks='specify tasks'" >> ~/.bashrc \
-    && echo '# spec-kit aliases 已載入: /specify /plan /tasks' >> ~/.bashrc
-
-# 複製並安裝 SuperClaude 腳本
-COPY --chmod=755 config/claude/setup-SuperClaude.sh /home/aiagent/setup-SuperClaude.sh
-RUN set -euxo pipefail \
-    && echo "[SuperClaude] 使用 Python: $(python3 --version)" \
-    && echo "[SuperClaude] 使用 Node: $(node --version)" \
-    && /home/aiagent/setup-SuperClaude.sh || (echo "SuperClaude 安裝腳本失敗，列出日誌後終止" && cat /home/aiagent/superclaude_install.log || true && exit 1)
-
-
-# 暴露常用端口（可選）
-EXPOSE 3000 8000 8080
+# 直接建立 node / npm / npx symlink 以供非互動 shell 使用
+SHELL ["/bin/bash","-lc"]
+RUN set -eux; \
+    if [ -d "$NVM_DIR/versions/node/v${NODE_VERSION}/bin" ]; then \
+    ln -sf $NVM_DIR/versions/node/v${NODE_VERSION}/bin/node /usr/local/bin/node || true; \
+    ln -sf $NVM_DIR/versions/node/v${NODE_VERSION}/bin/npm /usr/local/bin/npm || true; \
+    ln -sf $NVM_DIR/versions/node/v${NODE_VERSION}/bin/npx /usr/local/bin/npx || true; \
+    fi; \
+    grep -q 'nvm.sh' ~/.profile || echo '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && nvm use ${NODE_VERSION} > /dev/null 2>&1' >> ~/.profile
+RUN printf '%s\n%s\n%s\n%s\n' \
+    'export NVM_DIR="$HOME/.nvm"' \
+    'export PATH="$HOME/.local/bin:$HOME/bin:$NVM_DIR/versions/node/v'"${NODE_VERSION}"'/bin:$PATH"' \
+    '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"' \
+    'nvm use ${NODE_VERSION} > /dev/null 2>&1 || nvm install ${NODE_VERSION}' > /home/aiagent/.profile
+SHELL ["/bin/bash","-lc"]
 
 # 健康檢查
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD bash -c 'source ~/.profile && node --version' || exit 1
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+    CMD bash -lc 'node --version >/dev/null 2>&1 || exit 1'
 
-# 預設命令
+EXPOSE 3000 8000 8080
+
 CMD ["/bin/bash"]
+
+# 使用方式: (建置時使用 BuildKit 以啟用 cache)
+#   DOCKER_BUILDKIT=1 docker build -t dev-ai-agent:latest .
+#   docker run -it --rm dev-ai-agent:latest
