@@ -75,6 +75,7 @@ RUN set -euxo pipefail \
 
 # 將 Node 加入全域 PATH（建置期及執行期都生效）
 ENV PATH="${NVM_DIR}/versions/node/v${NODE_VERSION}/bin:${PATH}"
+ENV PATH="/home/aiagent/.local/bin:/home/aiagent/bin:${PATH}"
 
 # 設定預設工作目錄
 WORKDIR /home/aiagent/workspace
@@ -85,6 +86,7 @@ RUN echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc \
     && echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' >> ~/.bashrc \
     && echo 'nvm use 22 > /dev/null 2>&1' >> ~/.bashrc \
     && echo 'export PATH="$NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH"' >> ~/.bashrc \
+    && echo 'export PATH="$HOME/.local/bin:$HOME/bin:$PATH"' >> ~/.bashrc \
     && echo 'POWERLINE_SCRIPT=/usr/share/powerline/bindings/bash/powerline.sh' >> ~/.bashrc \
     && echo 'if [ -f $POWERLINE_SCRIPT ]; then' >> ~/.bashrc \
     && echo '  source $POWERLINE_SCRIPT' >> ~/.bashrc \
@@ -92,7 +94,30 @@ RUN echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc \
     && echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.profile \
     && echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> ~/.profile \
     && echo 'nvm use 22 > /dev/null 2>&1' >> ~/.profile \
-    && echo 'export PATH="$NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH"' >> ~/.profile
+    && echo 'export PATH="$NVM_DIR/versions/node/v$NODE_VERSION/bin:$HOME/.local/bin:$HOME/bin:$PATH"' >> ~/.profile
+
+# ------------------------------------------------------------
+# 安裝 uv (Python 套件 / 執行環境管理工具) 並整合 spec-kit
+# ------------------------------------------------------------
+# 1. 安裝 uv (只需單一靜態 binary) 2. 預先快取 specify 指令環境
+# 3. 建立便利 wrapper 腳本，使用 "specify" 風格工作流：/specify /plan /tasks
+RUN set -euxo pipefail \
+    && mkdir -p /home/aiagent/bin \
+    && curl -LsSf https://astral.sh/uv/install.sh | sh \
+    && uv --version \
+    && echo '[spec-kit] 預熱 specify 指令 (下載相依資源)' \
+    && uvx --from git+https://github.com/github/spec-kit.git specify --help > /dev/null \
+    && printf '#!/usr/bin/env bash\nexec uvx --from git+https://github.com/github/spec-kit.git specify "$@"\n' > /home/aiagent/bin/specify \
+    && chmod +x /home/aiagent/bin/specify \
+    && echo '# 快速建立新專案: specify init <project>' > /home/aiagent/bin/spec-kit-notes.txt \
+    && echo '# 既有資料夾初始化: specify init --here' >> /home/aiagent/bin/spec-kit-notes.txt \
+    && echo '# 規格撰寫: /specify <描述>' >> /home/aiagent/bin/spec-kit-notes.txt \
+    && echo '# 技術規劃: /plan <技術與架構>' >> /home/aiagent/bin/spec-kit-notes.txt \
+    && echo '# 任務拆解: /tasks' >> /home/aiagent/bin/spec-kit-notes.txt \
+    && grep -q 'alias /specify=' ~/.bashrc || echo "alias /specify='specify'" >> ~/.bashrc \
+    && grep -q 'alias /plan=' ~/.bashrc || echo "alias /plan='specify plan'" >> ~/.bashrc \
+    && grep -q 'alias /tasks=' ~/.bashrc || echo "alias /tasks='specify tasks'" >> ~/.bashrc \
+    && echo '# spec-kit aliases 已載入: /specify /plan /tasks' >> ~/.bashrc
 
 # 複製並安裝 SuperClaude 腳本
 COPY --chmod=755 config/claude/setup-SuperClaude.sh /home/aiagent/setup-SuperClaude.sh
