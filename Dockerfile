@@ -8,7 +8,7 @@ ARG NODE_VERSION=22
 ARG SUPERCLAUDE_INSTALLER=pipx
 ARG NVM_VERSION=v0.40.1
 ARG SPEC_KIT_REPO=git+https://github.com/github/spec-kit.git
-ARG GLOBAL_NPM_PACKAGES="@openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli @pimzino/claude-code-spec-workflow"
+ARG GLOBAL_NPM_PACKAGES="@openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli @pimzino/claude-code-spec-workflow ccusage"
 
 ######################################################################
 # Stage 1: base-apt (system packages only; reproducible & cached)     #
