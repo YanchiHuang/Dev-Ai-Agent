@@ -17,4 +17,3 @@ fi
 
 # Continue with the requested command
 exec "$@"
-
