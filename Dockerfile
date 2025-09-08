@@ -89,13 +89,14 @@ RUN set -euxo pipefail; \
     npm cache clean --force; \
     echo "[builder] Node $(node -v) 完成, npm global 安裝完成"
 
-# 安裝 uv + 預熱 spec-kit (使用 cache mount 以加速 uv 重複建置)
+# 安裝 uv + 預熱 spec-kit (改用 pipx 取代 curl | sh 以提升可重現性與安全性)
 RUN --mount=type=cache,target=/home/aiagent/.cache/uv,uid=1000,gid=1000 \
     set -euxo pipefail; \
-    curl -LsSf https://astral.sh/uv/install.sh | sh; \
     export PATH="$HOME/.local/bin:$PATH"; \
+    pipx install --pip-args='--no-cache-dir' uv || echo 'uv already installed'; \
     "$HOME/.local/bin/uv" --version; \
     echo '[spec-kit] 預熱 specify'; \
+    # uvx 為 uv 提供的 entrypoint；pipx 安裝後會在 ~/.local/bin 產生 uv 與 uvx
     "$HOME/.local/bin/uvx" --from ${SPEC_KIT_REPO} specify --help >/dev/null; \
     printf '#!/usr/bin/env bash\nexport PATH="$HOME/.local/bin:$PATH"\nexec uvx --from %s specify "$@"\n' "$SPEC_KIT_REPO" > /home/aiagent/bin/specify; \
     chmod +x /home/aiagent/bin/specify; \
