@@ -27,14 +27,22 @@ AI 開發助手容器，整合多個 CLI 工具（如 Codex、Gemini、Claude、
 
 ## 提供以下 AI Agent 功能
 
-- codex-cli：`npm install -g @openai/codex`
-- gemini-cli：`npm install -g @google/gemini-cli`
-- claude-code：`npm install -g @anthropic-ai/claude-code`
-- SuperClaude Framework 安裝腳本：
-  - `config/claude/setup-SuperClaude.sh` 提供一鍵安裝 [SuperClaude Framework](https://github.com/SuperClaude-Org/SuperClaude_Framework) 的自動化腳本，支援 Linux/Docker 環境，內建 uv/pip 虛擬環境建立、專案下載、依賴安裝與 profile 快速設定，適合開發者快速部署與升級。
-- grok-cli：`npm install -g @vibe-kit/grok-cli`
-- Claude Code Spec Workflow：`npm install -g @pimzino/claude-code-spec-workflow` （提供規格 / Bug 工作流、自動化任務與 Dashboard）
-- ccusage：`npm install -g ccusage`（Claude 擴充工具）
+- [claude-code](https://www.npmjs.com/package/@anthropic-ai/claude-code):Claude Code is an agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster by executing routine tasks, explaining complex code, and handling git workflows - all through natural language commands.
+
+  - [SuperClaude_Framework](https://www.npmjs.com/package/@bifrost_inc/superclaude)：SuperClaude is a meta-programming configuration framework that transforms Claude Code into a structured development platform through behavioral instruction injection and component orchestration. It provides systematic workflow automation with powerful tools and intelligent agents.
+
+  - [Claude Code Spec Workflow](https://www.npmjs.com/package/@pimzino/claude-code-spec-workflow):About
+    Automated workflows for Claude Code. Features spec-driven development for new features (Requirements → Design → Tasks → Implementation) and streamlined bug fix workflow for quick issue resolution (Report → Analyze → Fix → Verify).
+
+  - [ccusage](https://www.npmjs.com/package/ccusage)：A CLI tool for analyzing Claude Code usage from local JSONL files.
+
+- [codex-cli](https://www.npmjs.com/package/@openai/codex):Codex CLI is a coding agent from OpenAI that runs locally on your computer.If you are looking for the cloud-based agent from OpenAI, Codex Web
+- [gemini-cli](https://www.npmjs.com/package/@google/gemini-cli):Gemini CLI is an open-source AI agent that brings the power of Gemini directly into your terminal. It provides lightweight access to Gemini, giving you the most direct path from your prompt to our model.
+- [grok-cli](https://www.npmjs.com/package/@vibe-kit/grok-cli):A conversational AI CLI tool powered by Grok with intelligent text editor capabilities and tool usage.
+
+## 其他功能
+
+- [spec-kit](https://github.com/github/spec-kit?tab=readme-ov-file#1-install-specify):Toolkit to help you get started with Spec-Driven Development
 
 ## git 設定
 
