@@ -124,54 +124,54 @@ AI 開發助手容器，整合多個 CLI 工具（如 Codex、Gemini、Claude、
 - **全域配置**: 支援 Claude Code、Gemini CLI 與 Codex CLI 的全域設定管理
 - **便利別名**: 預設提供常用 AI 工具的快捷指令
 
-### AI 工具使用
+### AI 工具使用方式
 
-進入容器後，可使用以下 AI CLI 工具：
+進入容器後，可直接使用以下 AI CLI 工具：
 
 #### Claude Code
 
 ```bash
-claude chat                    # 開始對話
-claude edit                    # 編輯模式
-cchelp                        # 使用預設指令的聊天 (需先執行 setup-claude.sh)
-cc                            # claude 的簡短別名
+claude chat                # 啟動對話模式
+claude edit                # 進入編輯模式
+cchelp                     # 使用預設指令聊天 (需先執行 setup-claude.sh)
+cc                         # claude 的簡易別名
 ```
 
 #### Gemini CLI
 
 ```bash
-gemini chat                   # 開始對話
-gchat                         # 使用預設指令的聊天 (需先執行 setup-gemini.sh)
+gemini chat                # 啟動對話模式
+gchat                      # 使用預設指令聊天 (需先執行 setup-gemini.sh)
 ```
 
 #### Codex CLI
 
 ```bash
-codex                         # OpenAI Codex CLI
-cx                            # codex 的簡短別名 (需先執行 setup-codex.sh)
-cxanalyze <file>              # 分析代碼文件
-cxrefactor <file>             # 重構代碼
-cxexplain <file>              # 解釋代碼
+codex                      # 啟動 OpenAI Codex CLI
+cx                         # codex 的簡易別名 (需先執行 setup-codex.sh)
+cxanalyze <file>           # 分析程式碼檔案
+cxrefactor <file>          # 重構程式碼
+cxexplain <file>           # 解釋程式碼
 ```
 
 #### 其他工具
 
-````bash
-grok                          # Grok CLI
-claude-code-spec-workflow     # 規格/bug workflow 主指令 (已全域安裝)
+```bash
+grok                                   # 啟動 Grok CLI
+claude-code-spec-workflow              # 啟動規格/bug 工作流主指令 (已全域安裝)
 npx -p @pimzino/claude-code-spec-workflow claude-spec-dashboard   # 啟動即時 Dashboard
-ccusage --version             # 檢視 ccusage 版本
-ccusage --help                # 查看可用指令說明
+ccusage --version                      # 查看 ccusage 版本
+ccusage --help                         # 查看 ccusage 指令說明
+```
 
-#### Claude Code Spec Workflow 工作流快速示例
+#### Claude Code Spec Workflow 快速示例
 
 ```bash
-# 一次性在專案目錄建立 .claude 結構
+# 在專案目錄建立 .claude 結構
 claude-code-spec-workflow
 
 # 建立 Steering 文件 (product.md / tech.md / structure.md)
-claude
-/spec-steering-setup
+claude /spec-steering-setup
 
 # 建立新功能規格
 /spec-create user-auth "User auth system"
@@ -179,31 +179,29 @@ claude
 # 執行第一個任務 (task 1)
 /spec-execute 1 user-auth
 
-# 啟動 Dashboard (可視化追蹤)
+# 啟動 Dashboard 進行可視化追蹤
 npx -p @pimzino/claude-code-spec-workflow claude-spec-dashboard
-````
+```
 
-提供 `config/claude/setup-spec-workflow.sh` 腳本可追加常用 alias：
+可使用 `config/claude/setup-spec-workflow.sh` 腳本追加常用 alias：
 
 ```bash
 bash ~/.claude/setup-spec-workflow.sh
-spec-get-steering             # 一次載入 steering context
-spec-get-spec feature-name    # 載入特定功能規格 context
+spec-get-steering             # 載入 steering context
+spec-get-spec feature-name    # 載入指定功能規格 context
 spec-dash                     # 啟動 Dashboard
 ```
 
-````
-
-詳細使用說明請參考 `USAGE.md` 檔案。
+詳細使用方式請參考 `USAGE.md`。
 
 ### 進階設定
 
-於 `.env` 檔案可自訂以下參數：
+可於 `.env` 檔案自訂參數：
 
-- `NODE_VERSION`：控制各工具版本
+- `NODE_VERSION`：指定 Node.js 版本
 
-變更後請重新建構映像：
+修改後請重新建構映像：
 
 ```bash
 docker-compose build --no-cache
-````
+```
