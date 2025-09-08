@@ -10,6 +10,7 @@
 # Docker 相關
 __pycache__/
 *.pyc
+workspace/
 !workspace/.keep
 config/ssh/*
 !config/ssh/.keep
