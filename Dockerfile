@@ -144,7 +144,9 @@ LABEL org.opencontainers.image.licenses=AGPL-3.0
 ENV DEBIAN_FRONTEND=noninteractive \
     NVM_DIR=/home/aiagent/.nvm \
     NODE_VERSION=${NODE_VERSION} \
-    SUPERCLAUDE_INSTALLER=${SUPERCLAUDE_INSTALLER}
+    SUPERCLAUDE_INSTALLER=${SUPERCLAUDE_INSTALLER} \
+    CHECK_CLI_UPDATES=1 \
+    CHECK_CLI_PACKAGES="@openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli"
 
 # 安裝 runtime 必要套件 (避免重新安裝所有建置工具，可視需求裁剪)
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -174,6 +176,10 @@ COPY --chown=aiagent:aiagent --from=builder /home/aiagent/.gitconfig /home/aiage
 COPY --chown=aiagent:aiagent --from=builder /home/aiagent/superclaude_install.log /home/aiagent/superclaude_install.log
 COPY --chown=aiagent:aiagent --from=builder /home/aiagent/setup-SuperClaude.sh /home/aiagent/setup-SuperClaude.sh
 
+# Copy runtime scripts (entrypoint + update checker)
+COPY --chown=aiagent:aiagent --chmod=755 config/scripts/check-cli-updates.sh /home/aiagent/bin/check-cli-updates.sh
+COPY --chown=aiagent:aiagent --chmod=755 config/scripts/entrypoint.sh /home/aiagent/bin/entrypoint.sh
+
 # 預設工作空間
 RUN mkdir -p workspace projects .ssh .gemini config
 WORKDIR /home/aiagent/workspace
@@ -202,6 +208,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
 
 EXPOSE 3000 8000 8080
 
+ENTRYPOINT ["/home/aiagent/bin/entrypoint.sh"]
 CMD ["/bin/bash"]
 
 # 使用方式: (建置時使用 BuildKit 以啟用 cache)

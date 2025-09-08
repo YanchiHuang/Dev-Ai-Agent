@@ -124,6 +124,53 @@ AI 開發助手容器，整合多個 CLI 工具（如 Codex、Gemini、Claude、
 - **全域配置**: 支援 Claude Code、Gemini CLI 與 Codex CLI 的全域設定管理
 - **便利別名**: 預設提供常用 AI 工具的快捷指令
 
+### 🔄 啟動時 CLI 版本檢查
+
+容器每次啟動時，會檢查以下全域 npm CLI 是否有新版本，若非最新版則在啟動訊息中提示更新指令（不會自動更新）：
+
+- `@openai/codex`
+- `@google/gemini-cli`
+- `@anthropic-ai/claude-code`
+- `@vibe-kit/grok-cli`
+
+運作方式：`config/scripts/entrypoint.sh` 會呼叫 `config/scripts/check-cli-updates.sh`，透過 `npm outdated -g --json` 比對目前已安裝版本與最新版本。若網路不可用或查詢失敗，將略過檢查且不影響容器啟動。
+
+環境變數設定：
+
+- `CHECK_CLI_UPDATES`：預設 `1`（啟用）；設為 `0` 可停用啟動檢查。
+- `CHECK_CLI_PACKAGES`：自訂要檢查的套件清單（以空白分隔）。
+
+docker-compose 範例：
+
+```yaml
+services:
+  aiagent:
+    environment:
+      - CHECK_CLI_UPDATES=1
+      - CHECK_CLI_PACKAGES="@openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli"
+```
+
+範例輸出：
+
+```text
+[cli-check] Checking CLI updates for: @openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli
+[cli-check] Updates available for the following global CLIs:
+  - @openai/codex: 1.2.3 -> 1.2.5
+  - @google/gemini-cli: 0.8.0 -> 0.9.1
+
+[cli-check] To update, run:
+  npm i -g @openai/codex@latest
+  npm i -g @google/gemini-cli@latest
+
+[cli-check] Set CHECK_CLI_UPDATES=0 to disable this check at startup.
+```
+
+手動更新指令（容器內）：
+
+```bash
+npm i -g @openai/codex@latest @google/gemini-cli@latest @anthropic-ai/claude-code@latest @vibe-kit/grok-cli@latest
+```
+
 ### AI 工具使用方式
 
 進入容器後，可直接使用以下 AI CLI 工具：
@@ -199,6 +246,9 @@ spec-dash                     # 啟動 Dashboard
 可於 `.env` 檔案自訂參數：
 
 - `NODE_VERSION`：指定 Node.js 版本
+
+- `CHECK_CLI_UPDATES`：是否在啟動時檢查 CLI 更新（1/0）。
+- `CHECK_CLI_PACKAGES`：自訂需要檢查更新的 CLI 套件清單。
 
 修改後請重新建構映像：
 
