@@ -116,8 +116,8 @@ RUN --mount=type=cache,target=/home/aiagent/.cache/uv,uid=1000,gid=1000 \
 
 # Shell 環境設定 (僅一次; 可快取)
 RUN echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc \
-    && echo '[ -s "$NVM_DIR/nvm.sh" ] && \\ . "$NVM_DIR/nvm.sh"' >> ~/.bashrc \
-    && echo '[ -s "$NVM_DIR/bash_completion" ] && \\ . "$NVM_DIR/bash_completion"' >> ~/.bashrc \
+    && echo '[ -s "$NVM_DIR/nvm.sh" ] &&  . "$NVM_DIR/nvm.sh"' >> ~/.bashrc \
+    && echo '[ -s "$NVM_DIR/bash_completion" ] &&  . "$NVM_DIR/bash_completion"' >> ~/.bashrc \
     && echo "nvm use ${NODE_VERSION} > /dev/null 2>&1" >> ~/.bashrc \
     && echo 'export PATH="$NVM_DIR/versions/node/v'$NODE_VERSION'/bin:$HOME/.local/bin:$HOME/bin:$PATH"' >> ~/.bashrc \
     && echo 'POWERLINE_SCRIPT=/usr/share/powerline/bindings/bash/powerline.sh' >> ~/.bashrc \
