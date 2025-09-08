@@ -101,15 +101,17 @@ RUN --mount=type=cache,target=/home/aiagent/.cache/uv,uid=1000,gid=1000 \
     chmod +x /home/aiagent/bin/specify; \
     ln -s "$HOME/.local/bin/uv" /home/aiagent/bin/uv || true; \
     ln -s "$HOME/.local/bin/uvx" /home/aiagent/bin/uvx || true; \
-    echo "alias /specify='specify'" >> ~/.bashrc; \
-    echo "alias /plan='specify plan'" >> ~/.bashrc; \
-    echo "alias /tasks='specify tasks'" >> ~/.bashrc; \
+    # 修正: 先前使用 /specify /plan /tasks 作為 alias 名稱 (含斜線) 會觸發 bash: invalid alias name
+    # 改為不含斜線的合法名稱，維持使用體驗 (使用者輸入 specify/plan/tasks)
+    echo "alias specify='specify'" >> ~/.bashrc; \
+    echo "alias plan='specify plan'" >> ~/.bashrc; \
+    echo "alias tasks='specify tasks'" >> ~/.bashrc; \
     printf '%s\n%s\n%s\n%s\n%s\n' \
     '# 快速建立新專案: specify init <project>' \
     '# 既有資料夾初始化: specify init --here' \
-    '# 規格撰寫: /specify <描述>' \
-    '# 技術規劃: /plan <技術與架構>' \
-    '# 任務拆解: /tasks' > /home/aiagent/bin/spec-kit-notes.txt
+    '# 規格撰寫: specify <描述>' \
+    '# 技術規劃: plan <技術與架構>' \
+    '# 任務拆解: tasks' > /home/aiagent/bin/spec-kit-notes.txt
 
 # Shell 環境設定 (僅一次; 可快取)
 RUN echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc \
