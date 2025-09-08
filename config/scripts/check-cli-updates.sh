@@ -1,17 +1,3 @@
-let buf="";
-process.stdin.on("data",d=>buf+=d).on("end",()=>{
-  let o={};
-  try { o = JSON.parse(buf||"{}"); } catch { o = {}; }
-  const rows = Object.entries(o).map(([name, info]) => ({name, current: info.current, latest: info.latest}));
-  for (const r of rows) {
-    console.log(`  - ${r.name}: ${r.current} -> ${r.latest}`);
-  }
-  console.log("\n--PKG-LIST--");
-  for (const r of rows) {
-    console.log(r.name);
-  }
-});
-')
 #!/usr/bin/env bash
 set -euo pipefail
 
