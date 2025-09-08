@@ -8,6 +8,7 @@ AI 開發助手容器，整合多個 CLI 工具（如 Codex、Gemini、Claude、
 - Gemini CLI (`@google/gemini-cli`)
 - Claude Code CLI (`@anthropic-ai/claude-code`)
 - Grok CLI (`@vibe-kit/grok-cli`)
+- Claude Usage 工具 (`ccusage`)
 - NVM / Node.js v22 / Python3 / Git / GH CLI
 - 使用 `.env` 管理金鑰與設定
 - 非 root 使用者執行，安全性佳
@@ -33,6 +34,7 @@ AI 開發助手容器，整合多個 CLI 工具（如 Codex、Gemini、Claude、
   - `config/claude/setup-SuperClaude.sh` 提供一鍵安裝 [SuperClaude Framework](https://github.com/SuperClaude-Org/SuperClaude_Framework) 的自動化腳本，支援 Linux/Docker 環境，內建 uv/pip 虛擬環境建立、專案下載、依賴安裝與 profile 快速設定，適合開發者快速部署與升級。
 - grok-cli：`npm install -g @vibe-kit/grok-cli`
 - Claude Code Spec Workflow：`npm install -g @pimzino/claude-code-spec-workflow` （提供規格 / Bug 工作流、自動化任務與 Dashboard）
+- ccusage：`npm install -g ccusage`（Claude 擴充工具）
 
 ## git 設定
 
@@ -153,6 +155,8 @@ cxexplain <file>              # 解釋代碼
 grok                          # Grok CLI
 claude-code-spec-workflow     # 規格/bug workflow 主指令 (已全域安裝)
 npx -p @pimzino/claude-code-spec-workflow claude-spec-dashboard   # 啟動即時 Dashboard
+ccusage --version             # 檢視 ccusage 版本
+ccusage --help                # 查看可用指令說明
 
 #### Claude Code Spec Workflow 工作流快速示例
 
