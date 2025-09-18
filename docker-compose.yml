@@ -13,6 +13,8 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - NODE_VERSION=${NODE_VERSION:-22}
       - TZ=${TZ:-UTC}
+      - CHECK_CLI_UPDATES=${CHECK_CLI_UPDATES:-1}
+      - CLI_AUTO_UPDATE=${CLI_AUTO_UPDATE:-0}
     volumes:
       - ./workspace:/home/aiagent/workspace
       - ./config:/home/aiagent/config

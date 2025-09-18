@@ -75,11 +75,43 @@ ONLY_NAMES=$(printf "%s" "${OUTDATED_LIST}" | sed -n '/^--PKG-LIST--$/,$p' | sed
 printf "%s\n" "${PRETTY_SECTION}"
 
 echo ""
-echo "[cli-check] To update, run:"
-while IFS= read -r pkg; do
-  [[ -n "$pkg" ]] && echo "  npm i -g ${pkg}@latest"
-done <<< "${ONLY_NAMES}"
+AUTO_UPDATE=${CLI_AUTO_UPDATE:-${CHECK_CLI_AUTO_UPDATE:-0}}
+
+if [[ "${AUTO_UPDATE}" == "1" ]]; then
+  echo "[cli-check] Auto-update enabled via CLI_AUTO_UPDATE=1."
+  echo "[cli-check] Updating the following packages to latest:"
+  while IFS= read -r pkg; do
+    if [[ -n "$pkg" ]]; then
+      echo "  - ${pkg}"
+    fi
+  done <<< "${ONLY_NAMES}"
+  echo ""
+  set +e
+  # Perform a single npm install for all outdated packages to speed things up.
+  PKG_ARGS=()
+  while IFS= read -r pkg; do
+    [[ -n "$pkg" ]] && PKG_ARGS+=("${pkg}@latest")
+  done <<< "${ONLY_NAMES}"
+  if [[ ${#PKG_ARGS[@]} -gt 0 ]]; then
+    npm i -g "${PKG_ARGS[@]}"
+    NPM_STATUS=$?
+    if [[ ${NPM_STATUS} -ne 0 ]]; then
+      echo "[cli-check] Auto-update encountered errors (status ${NPM_STATUS}). See logs above." >&2
+    else
+      echo "[cli-check] Auto-update completed successfully."
+    fi
+  fi
+  set -e
+else
+  echo "[cli-check] To update, run:"
+  while IFS= read -r pkg; do
+    [[ -n "$pkg" ]] && echo "  npm i -g ${pkg}@latest"
+  done <<< "${ONLY_NAMES}"
+fi
+
 echo ""
-echo "[cli-check] Set CHECK_CLI_UPDATES=0 to disable this check at startup."
+echo "[cli-check] Env vars:"
+echo "  - CHECK_CLI_UPDATES=0 to skip checks"
+echo "  - CLI_AUTO_UPDATE=1 to auto-update (alias: CHECK_CLI_AUTO_UPDATE)"
 
 exit 0
