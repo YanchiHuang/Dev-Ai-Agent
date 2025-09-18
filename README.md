@@ -61,6 +61,9 @@ AI 開發助手容器，整合多個 CLI 工具（如 Codex、Gemini、Claude、
 
    - 開啟 `.env` 檔案
    - 填入您的 OpenAI API 金鑰、Gemini API 金鑰等
+   - 可選：調整 CLI 更新行為
+     - `CHECK_CLI_UPDATES=1` 啟用啟動時檢查全域 CLI 是否有更新（預設開啟）
+     - `CLI_AUTO_UPDATE=0` 啟用自動更新（設為 `1` 會在啟動時將偵測到過期的 CLI 以 `npm i -g <pkg>@latest` 更新）
 
 3. **建立並啟動容器**
 
@@ -138,6 +141,7 @@ AI 開發助手容器，整合多個 CLI 工具（如 Codex、Gemini、Claude、
 環境變數設定：
 
 - `CHECK_CLI_UPDATES`：預設 `1`（啟用）；設為 `0` 可停用啟動檢查。
+- `CLI_AUTO_UPDATE`：預設 `0`（關閉）；設為 `1` 於啟動時自動更新過期 CLI。
 - `CHECK_CLI_PACKAGES`：自訂要檢查的套件清單（以空白分隔）。
 
 docker-compose 範例：
@@ -246,9 +250,9 @@ spec-dash                     # 啟動 Dashboard
 可於 `.env` 檔案自訂參數：
 
 - `NODE_VERSION`：指定 Node.js 版本
-
-- `CHECK_CLI_UPDATES`：是否在啟動時檢查 CLI 更新（1/0）。
-- `CHECK_CLI_PACKAGES`：自訂需要檢查更新的 CLI 套件清單。
+- `CHECK_CLI_UPDATES`：是否在啟動時檢查 CLI 更新（1/0）
+- `CLI_AUTO_UPDATE`：是否在啟動時自動更新過期 CLI（1/0）
+- `CHECK_CLI_PACKAGES`：自訂需要檢查更新的 CLI 套件清單
 
 修改後請重新建構映像：
 

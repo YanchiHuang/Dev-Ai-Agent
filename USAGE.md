@@ -32,6 +32,8 @@ ANTHROPIC_API_KEY=your_anthropic_api_key_here
 
 # 可選設定
 NODE_VERSION=22
+CHECK_CLI_UPDATES=1
+CLI_AUTO_UPDATE=0
 ```
 
 ### 3. 建立容器
@@ -204,6 +206,21 @@ sudo apt update && sudo apt install <package-name>
 # 使用 npm
 npm install -g <package-name>
 
+```
+
+### 啟動時 CLI 版本檢查/自動更新
+
+容器啟動時會執行 `config/scripts/check-cli-updates.sh`：
+
+- `CHECK_CLI_UPDATES=1` 啟動時檢查全域 CLI 是否過期並列出更新指令
+- `CLI_AUTO_UPDATE=1` 啟動時自動執行 `npm i -g <pkg>@latest` 更新偵測到過期的 CLI
+- `CHECK_CLI_PACKAGES` 可自訂要檢查的套件清單（以空白分隔）
+
+在單次啟動時臨時覆蓋設定：
+
+```bash
+CHECK_CLI_UPDATES=0 docker-compose up -d
+CLI_AUTO_UPDATE=1 docker-compose up -d
 ```
 
 ## 安全注意事項
