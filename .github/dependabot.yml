@@ -1,13 +1,16 @@
 version: 2
 updates:
-  - package-ecosystem: "npm"
+  # Docker base image updates for root Dockerfile
+  - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
-      time: "04:00"
+      time: "05:00"
       timezone: "Asia/Taipei"
     open-pull-requests-limit: 10
+
+  # GitHub Actions workflow action updates
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
