@@ -1,0 +1,24 @@
+name: Auto-merge Dependabot (labeled)
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, labeled]
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  enable-automerge:
+    name: Enable auto-merge when labeled
+    runs-on: ubuntu-latest
+    if: >-
+      github.actor == 'dependabot[bot]' &&
+      contains(join(fromJson(toJson(github.event.pull_request.labels)).*.name, ','), 'auto-merge')
+    steps:
+      - name: Enable PR auto-merge (squash)
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request-number: ${{ github.event.pull_request.number }}
+          merge-method: squash
