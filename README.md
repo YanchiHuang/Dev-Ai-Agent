@@ -25,6 +25,17 @@ AI 開發助手容器，整合多個 CLI 工具（如 Codex、Gemini、Claude、
 - powerline
 - vim
 
+## VS Code 推薦擴充功能
+
+專案的 [`.vscode/extensions.json`](.vscode/extensions.json) 已預載多組常用擴充功能建議，方便在 VS Code 中取得一致的開發體驗：
+
+- **Docker 與 YAML**：`ms-azuretools.vscode-docker`、`redhat.vscode-yaml`，協助撰寫與管理容器與 `docker-compose.yml` 設定。
+- **Git 與 JSON 工具**：`eamodio.gitlens`、`vscode.json-language-features`，提供版本控制洞察與 JSON 編輯輔助。
+- **JavaScript/TypeScript 開發**：`esbenp.prettier-vscode`、`dbaeumer.vscode-eslint`，維持一致的程式碼格式與靜態分析。
+- **AI 助手整合**：`github.copilot`、`github.copilot-chat`、`anthropic.claude-code`、`openai.chatgpt`、`Google.geminicodeassist`，快速接入多家 AI 編程輔助工具。
+- **開發體驗優化**：`vscode-icons-team.vscode-icons`、`usernamehw.errorlens`、`wayou.vscode-todo-highlight`，改善檔案瀏覽、錯誤提示與 TODO 標註。
+- **專案管理**：`alefragnani.project-manager`，集中管理多個工作區與專案。
+
 ## 提供以下 AI Agent 功能
 
 - [claude-code](https://www.npmjs.com/package/@anthropic-ai/claude-code)：Claude Code 是一款終端機 AI 編程助手，能理解您的程式碼庫，協助自動化日常任務、解釋複雜程式碼、處理 git 工作流，並可透過自然語言指令操作。
