@@ -37,17 +37,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     vim powerline; \
     rm -rf /var/lib/apt/lists/*
 
-# 安裝 GitHub CLI (獨立層, 若無變更可被快取)
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    set -eux; \
-    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg; \
-    chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg; \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list; \
-    apt-get update; \
-    apt-get install -y gh; \
-    rm -rf /var/lib/apt/lists/*
-
 ######################################################################
 # Stage 2: builder (install Node via NVM + global CLI tools + uv/spec) #
 ######################################################################
@@ -160,6 +149,17 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     git curl zstd ca-certificates gnupg lsb-release sudo \
     python3 python3-pip python3-venv python3-distutils pipx \
     vim powerline; \
+    rm -rf /var/lib/apt/lists/*
+
+# 安裝 GitHub CLI (final 階段需要)
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    set -eux; \
+    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg; \
+    chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg; \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list; \
+    apt-get update; \
+    apt-get install -y gh; \
     rm -rf /var/lib/apt/lists/*
 
 # 建立使用者 (需與 builder 相同 UID/GID)
