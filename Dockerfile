@@ -25,7 +25,7 @@ LABEL org.opencontainers.image.licenses=AGPL-3.0
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# 使用 BuildKit cache mount 加速 apt
+# 安裝系統基礎套件 (不包含建置工具)
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     set -eux; \
@@ -33,7 +33,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get install -y --no-install-recommends \
     git curl zstd ca-certificates gnupg lsb-release sudo \
     python3 python3-pip python3-venv python3-distutils pipx \
-    build-essential pkg-config libssl-dev libffi-dev \
     vim powerline; \
     rm -rf /var/lib/apt/lists/*
 
@@ -51,6 +50,15 @@ ENV NVM_DIR=/home/aiagent/.nvm \
     NODE_VERSION=${NODE_VERSION} \
     SUPERCLAUDE_INSTALLER=${SUPERCLAUDE_INSTALLER} \
     SPEC_KIT_REPO=${SPEC_KIT_REPO}
+
+# 安裝建置工具 (僅在 builder 階段需要)
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+    build-essential pkg-config libssl-dev libffi-dev; \
+    rm -rf /var/lib/apt/lists/*
 
 # 建立使用者 (固定 UID/GID=1000 以利 cache mount 權限設定)
 RUN groupadd -g 1000 aiagent || true \
@@ -123,7 +131,7 @@ RUN set -euxo pipefail; \
 ######################################################################
 # Stage 3: final (copy only必要內容, 減少額外 cache/artifacts)           #
 ######################################################################
-FROM ${BASE_IMAGE} AS final
+FROM base-apt AS final
 ARG NODE_VERSION
 ARG SUPERCLAUDE_INSTALLER
 ARG NVM_VERSION
@@ -139,17 +147,6 @@ ENV DEBIAN_FRONTEND=noninteractive \
     SUPERCLAUDE_INSTALLER=${SUPERCLAUDE_INSTALLER} \
     CHECK_CLI_UPDATES=1 \
     CHECK_CLI_PACKAGES="@openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli"
-
-# 安裝 runtime 必要套件 (避免重新安裝所有建置工具，可視需求裁剪)
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    set -eux; \
-    apt-get update; \
-    apt-get install -y --no-install-recommends \
-    git curl zstd ca-certificates gnupg lsb-release sudo \
-    python3 python3-pip python3-venv python3-distutils pipx \
-    vim powerline; \
-    rm -rf /var/lib/apt/lists/*
 
 # 安裝 GitHub CLI (final 階段需要)
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
