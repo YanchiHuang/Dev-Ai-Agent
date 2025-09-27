@@ -71,7 +71,12 @@ claude
 
 # 執行特定任務
 claude "請幫我分析這個程式碼"
+
+# 跳過權限提示 (危險) — 需信任環境才使用
+cskip  # 等同於：claude --dangerously-skip-permissions
 ```
+
+注意：`cskip` 會直接跳過 Claude Code 的權限請求流程，可能導致未經確認的檔案/命令操作，請僅在可信任的倉庫與可控環境使用。
 
 ### Codex CLI (OpenAI)
 

@@ -40,6 +40,7 @@ This is a Docker-based AI development environment that provides a containerized 
 ## Container Management Commands
 
 ### Build and Start
+
 ```bash
 # Build and start the container
 docker-compose up -d
@@ -52,6 +53,7 @@ docker-compose exec aiagent bash
 ```
 
 ### Container Operations
+
 ```bash
 # Check container status
 docker-compose ps
@@ -84,21 +86,29 @@ Claude Code has dedicated global configuration mounted at `~/.claude/`:
 - **Usage**: `claude chat --instructions ~/.claude/default_instructions.md`
 
 Configuration priority (highest to lowest):
+
 1. `~/.claude/claude.json` (main config with project mappings)
 2. `~/.claude/settings.json` (user settings)
 3. Project-specific `.claude/` settings
 
 Create convenient aliases for Claude Code:
+
 ```bash
 alias cc='claude'
 alias cchat='claude chat'
 alias cchelp='claude chat --instructions ~/.claude/default_instructions.md'
+alias cskip='claude --dangerously-skip-permissions' # Use with caution: skips permission prompts
 ```
 
 For quick setup, run the initialization script:
+
 ```bash
 bash ~/.claude/setup-claude.sh
 ```
+
+Note on cskip:
+
+- The `cskip` alias uses `--dangerously-skip-permissions` to bypass permission prompts. This is risky and should only be used in trusted environments and repositories where you fully understand the implications.
 
 ### Gemini CLI Configuration
 
@@ -109,11 +119,13 @@ Gemini CLI has dedicated global configuration mounted at `~/.gemini/`:
 - **Usage**: `gemini chat --instructions ~/.gemini/instructions.txt`
 
 Create convenient alias for Gemini with pre-loaded instructions:
+
 ```bash
 alias gchat='gemini chat --instructions ~/.gemini/instructions.txt'
 ```
 
 For quick setup, run the initialization script:
+
 ```bash
 bash ~/.gemini/setup-gemini.sh
 ```
@@ -127,12 +139,14 @@ Codex CLI has dedicated global configuration mounted at `~/.codex/`:
 - **Usage**: `codex --config ~/.codex/config.toml --instructions ~/.codex/instructions.txt`
 
 Configuration features:
+
 - Model selection and parameters (temperature, max_tokens)
 - Output format preferences (markdown, line numbers)
 - Approval modes (auto, suggest, manual)
 - Default instructions file path
 
 Create convenient aliases for Codex CLI:
+
 ```bash
 alias cx='codex'
 alias cxhat='codex --instructions ~/.codex/instructions.txt'
@@ -140,11 +154,13 @@ alias cxconfig='codex --config ~/.codex/config.toml'
 ```
 
 For quick setup, run the initialization script:
+
 ```bash
 bash ~/.codex/setup-codex.sh
 ```
 
 Convenience functions available after setup:
+
 - `cxanalyze <file>` - Analyze code file with instructions
 - `cxrefactor <file> [prompt]` - Refactor code with optional custom prompt
 - `cxexplain <file>` - Get detailed code explanation
@@ -152,14 +168,16 @@ Convenience functions available after setup:
 ## Environment Configuration
 
 The project uses environment variables for configuration:
+
 - `OPENAI_API_KEY`: Required for Codex CLI
-- `GEMINI_API_KEY`: Required for Gemini CLI  
+- `GEMINI_API_KEY`: Required for Gemini CLI
 - `ANTHROPIC_API_KEY`: Required for Claude Code
 - `NODE_VERSION`: Controls Node.js version (default: 22)
 
 ## Git Configuration
 
 Pre-configured Git settings include:
+
 - User: "ai agent" <aiagent@example.com>
 - Core settings: `autocrlf = input`, default editor `nano`
 - Useful aliases: `st` (status), `co` (checkout), `br` (branch), `ci` (commit), `lg` (log --oneline --graph --decorate)

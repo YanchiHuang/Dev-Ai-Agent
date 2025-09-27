@@ -15,6 +15,9 @@ alias cedit='claude edit'
 alias cconfig='claude config'
 alias cinit='claude init'
 
+# Skip permission prompts (use with caution)
+alias cskip='claude --dangerously-skip-permissions'
+
 # Claude with default instructions
 alias cchelp='claude chat --instructions ~/.claude/default_instructions.md'
 
@@ -39,5 +42,6 @@ echo "  cedit     - claude edit"
 echo "  cconfig   - claude config"
 echo "  cchelp    - claude chat with default instructions"
 echo "  cproject  - claude init with default instructions"
+echo "  cskip     - claude with --dangerously-skip-permissions (use with caution)"
 echo ""
 echo "Reload your shell or run: source ~/.bashrc"

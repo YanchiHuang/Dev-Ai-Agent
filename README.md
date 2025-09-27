@@ -197,7 +197,10 @@ claude chat                # 啟動對話模式
 claude edit                # 進入編輯模式
 cchelp                     # 使用預設指令聊天 (需先執行 setup-claude.sh)
 cc                         # claude 的簡易別名
+cskip                      # 跳過權限提示 (危險) -> 相當於 `claude --dangerously-skip-permissions`
 ```
+
+注意：`cskip` 會使用 `--dangerously-skip-permissions` 跳過權限確認，僅建議在信任的專案與環境下使用，並充分了解其風險。
 
 #### Gemini CLI
 
