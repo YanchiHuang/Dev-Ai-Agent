@@ -7,6 +7,7 @@ AI 開發助手容器，整合多個 CLI 工具（如 Codex、Gemini、Claude、
 - Codex CLI (`@openai/codex`)
 - Gemini CLI (`@google/gemini-cli`)
 - Claude Code CLI (`@anthropic-ai/claude-code`)
+- GitHub Copilot CLI (`@github/copilot`)
 - Grok CLI (`@vibe-kit/grok-cli`)
 - Claude Usage 工具 (`ccusage`)
 - NVM / Node.js v22 / Python3 / Git / GH CLI
@@ -154,6 +155,20 @@ AI 開發助手容器，整合多個 CLI 工具（如 Codex、Gemini、Claude、
 - `CHECK_CLI_UPDATES`：預設 `1`（啟用）；設為 `0` 可停用啟動檢查。
 - `CLI_AUTO_UPDATE`：預設 `0`（關閉）；設為 `1` 於啟動時自動更新過期 CLI。
 - `CHECK_CLI_PACKAGES`：自訂要檢查的套件清單（以空白分隔）。
+- `GH_TOKEN`：GitHub Personal Access Token，用於在無瀏覽器或無頭環境下授權 `copilot` CLI。範例：
+
+  ```bash
+  GH_TOKEN=ghp_xxx... copilot auth login --with-token
+  ```
+
+- `COPILOT_MODEL`：（選用）指定 Copilot CLI 使用的模型名稱（視 `@github/copilot` 版本支援而定）。範例：
+
+  ```bash
+  export COPILOT_MODEL=gpt-copilot-2024-11
+  copilot chat --model "$COPILOT_MODEL"
+  ```
+
+如果在容器中以非互動方式使用 Copilot CLI，建議在 `.env` 或 docker-compose 的 environment 欄位中設定 `GH_TOKEN`；若需指定模型，則加入 `COPILOT_MODEL`。請參照 `@github/copilot` 的官方文件確認可用模型名稱與可用旗標。
 
 docker-compose 範例：
 
@@ -220,6 +235,16 @@ cxexplain <file>           # 解釋程式碼
 ```
 
 #### 其他工具
+
+#### GitHub Copilot CLI
+
+```bash
+copilot auth login        # 使用瀏覽器或 token 登入
+copilot chat              # 以對話方式使用 Copilot
+copilot suggest <file>    # 針對檔案或選取範圍提出程式建議
+```
+
+注意：本專案的 `Dockerfile` 在全域 npm 安裝清單中包含 `@github/copilot`（視映像建構時的環境而定）。若在無瀏覽器或 CI/無頭環境使用 Copilot CLI，可透過環境變數 `GH_TOKEN` (Personal Access Token) 進行授權 (見下方進階設定)。
 
 ```bash
 grok                                   # 啟動 Grok CLI
