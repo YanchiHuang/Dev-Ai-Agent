@@ -8,7 +8,7 @@ ARG NODE_VERSION=22
 ARG SUPERCLAUDE_INSTALLER=pipx
 ARG NVM_VERSION=v0.40.1
 ARG SPEC_KIT_REPO=git+https://github.com/github/spec-kit.git
-ARG GLOBAL_NPM_PACKAGES="@openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli @pimzino/claude-code-spec-workflow ccusage @github/copilot"
+ARG GLOBAL_NPM_PACKAGES="@openai/codex@latest @google/gemini-cli@latest @anthropic-ai/claude-code@latest @vibe-kit/grok-cli@latest @pimzino/claude-code-spec-workflow@latest ccusage@latest @github/copilot@latest"
 
 ######################################################################
 # Stage 1: base-apt (system packages only; reproducible & cached)
@@ -97,13 +97,13 @@ RUN mkdir -p config workspace .ssh projects .gemini bin \
 
 # 安裝 NVM + Node + 全域 npm CLI
 SHELL ["/bin/bash","-o","pipefail","-c"]
+# hadolint ignore=DL3016  # 安裝全域 CLI 套件故意使用 @latest（若需可重現建置，請在 CI 中傳入具體版本）
 RUN set -eux; \
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh | bash; \
     source "$NVM_DIR/nvm.sh"; \
     nvm install ${NODE_VERSION}; \
     nvm alias default ${NODE_VERSION}; \
     nvm use ${NODE_VERSION}; \
-    # hadolint ignore=DL3016  # CLI 套件需與雲端服務同步最新版本
     npm install -g ${GLOBAL_NPM_PACKAGES}; \
     npm cache clean --force; \
     echo "[builder] Node $(node -v) 完成, npm global 安裝完成"
@@ -112,10 +112,10 @@ RUN set -eux; \
 # 將 heredoc 與後續 shell 命令拆成兩個 RUN，以避免 Dockerfile 解析 heredoc 後
 # 將後續 shell 命令誤認為新指令（例如出現 "unknown instruction: chmod" 的錯誤）。
 # shellcheck disable=SC2016  # 需在檔案中保留未展開的 $HOME 與 "$@" 字樣
+# hadolint ignore=DL3013  # 安裝 uv 使用最新版本以便取得修正；若需可重現建置，請改為指定版本或在 CI 指定 UV_VERSION
 RUN --mount=type=cache,target=/home/aiagent/.cache/uv,uid=1000,gid=1000 \
     set -eux; \
     export PATH="$HOME/.local/bin:$PATH"; \
-    # hadolint ignore=DL3013  # 需安裝 uv 最新版以獲得錯誤修正
     pipx install --pip-args='--no-cache-dir' uv || echo 'uv already installed'; \
     "$HOME/.local/bin/uv" --version; \
     echo '[spec-kit] 預熱 specify'; \
