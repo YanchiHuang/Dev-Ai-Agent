@@ -8,7 +8,7 @@ ARG NODE_VERSION=22
 ARG SUPERCLAUDE_INSTALLER=pipx
 ARG NVM_VERSION=v0.40.1
 ARG SPEC_KIT_REPO=git+https://github.com/github/spec-kit.git
-ARG GLOBAL_NPM_PACKAGES="@openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli @pimzino/claude-code-spec-workflow ccusage"
+ARG GLOBAL_NPM_PACKAGES="@openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli @pimzino/claude-code-spec-workflow ccusage @github/copilot"
 
 ######################################################################
 # Stage 1: base-apt (system packages only; reproducible & cached)     #
@@ -146,7 +146,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     NODE_VERSION=${NODE_VERSION} \
     SUPERCLAUDE_INSTALLER=${SUPERCLAUDE_INSTALLER} \
     CHECK_CLI_UPDATES=1 \
-    CHECK_CLI_PACKAGES="@openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli"
+    CHECK_CLI_PACKAGES="@openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli @github/copilot"
 
 # 安裝 GitHub CLI (final 階段需要)
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -182,6 +182,7 @@ COPY --chown=aiagent:aiagent --chmod=755 config/scripts/entrypoint.sh /home/aiag
 
 # 預設工作空間
 RUN mkdir -p workspace projects .ssh .gemini config
+VOLUME ["/home/aiagent/.config"]
 WORKDIR /home/aiagent/workspace
 
 ENV PATH="/home/aiagent/.nvm/versions/node/v${NODE_VERSION}/bin:/home/aiagent/.local/bin:/home/aiagent/bin:${PATH}"
