@@ -1,300 +1,148 @@
 # 🧠 Dev-Ai-Agent
 
-AI 開發助手容器，整合多個 CLI 工具（如 Codex、Gemini、Claude、Grok），基於 `debian:bookworm-slim` 製作，支援 Node.js、Python、Git 等開發工具，讓 AI 助手指令隨時隨地可用！
+多家 AI CLI 工具整合在同一個 Debian 容器，開箱即用的開發助手環境。
 
-## 🛠️ 主要功能
+</div>
 
-- Codex CLI (`@openai/codex`)
-- Gemini CLI (`@google/gemini-cli`)
-- Claude Code CLI (`@anthropic-ai/claude-code`)
-- GitHub Copilot CLI (`@github/copilot`)
-- Grok CLI (`@vibe-kit/grok-cli`)
-- Claude Usage 工具 (`ccusage`)
-- NVM / Node.js v22 / Python3 / Git / GH CLI
-- 使用 `.env` 管理金鑰與設定
-- 非 root 使用者執行，安全性佳
+## 專案概要
 
-## DockerFile 預設安裝套件
+Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `aiagent` 使用者環境，預載 Node.js 22、Python、GitHub CLI 與多個 AI/開發工具。透過 `docker-compose` 便能在任何機器快速取得一致的工作站，同時提供自動檢查 CLI 更新、SuperClaude 工作流、Spec-Kit、MCP 伺服器等整合能力。
 
-- git
-- nvm
-- node 22
-- curl
-- zstd
-- github cli
-- python3
-- powerline
-- vim
+### Codebase Summary
 
-## VS Code 推薦擴充功能
+| 模組                                  | 內容                                                                                                        | 重點                                                                                                     |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `Dockerfile`                          | 三階段建置流程（`base-apt` → `builder` → `final`）安裝系統套件、NVM/Node、全域 npm CLI、`uv`、SuperClaude。 | 使用 cache mount 加速建構、建立 `aiagent` 使用者、在 runtime 階段載入 `entrypoint` 與 CLI 更新檢查腳本。 |
+| `docker-compose.yml`                  | 啟動 `aiagent` 服務並掛載設定、workspace、SSH 金鑰。                                                        | 支援環境變數覆寫 Node 版本、CLI 更新策略與 API 金鑰。                                                    |
+| `config/scripts/entrypoint.sh`        | 容器啟動時載入 NVM、執行 CLI 更新檢查後進入工作殼層。                                                       | 確保錯誤不會中斷啟動。                                                                                   |
+| `config/scripts/check-cli-updates.sh` | 利用 `npm outdated -g --json` 檢查全域 CLI 版本，並可選擇自動更新。                                         | 支援環境變數 `CHECK_CLI_UPDATES`、`CLI_AUTO_UPDATE`、`CHECK_CLI_PACKAGES`。                              |
+| `config/claude`                       | 提供 Claude Code 設定、預設指令、SuperClaude 安裝與 Spec Workflow alias 腳本。                              | `setup-SuperClaude.sh` 支援 pipx/uv/pip/npm 等安裝管道並產生日誌。                                       |
+| `config/codex`                        | Codex CLI 的 `config.toml` 與初始化腳本。                                                                   | 預先配置多個 provider/profile（OpenAI、Ollama、vLLM 等）。                                               |
+| `config/gemini`                       | Gemini CLI 設定檔與系統提示。                                                                               | 預載 MCP GitHub server 設定與繁體中文回應指示。                                                          |
+| `.env.example`                        | 範例環境變數。                                                                                              | 說明 Node 版本、API 金鑰與 CLI 更新開關。                                                                |
+| `USAGE.md`                            | 詳細操作手冊。                                                                                              | 包含建置、登入、工具使用、疑難排解、進階設定。                                                           |
 
-專案的 [`.vscode/extensions.json`](.vscode/extensions.json) 已預載多組常用擴充功能建議，方便在 VS Code 中取得一致的開發體驗：
+> 上表涵蓋倉庫內所有主要檔案，更多細節可於對應路徑查看原始碼與腳本註解。
 
-- **Docker 與 YAML**：`ms-azuretools.vscode-docker`、`redhat.vscode-yaml`，協助撰寫與管理容器與 `docker-compose.yml` 設定。
-- **Git 與 JSON 工具**：`eamodio.gitlens`、`vscode.json-language-features`，提供版本控制洞察與 JSON 編輯輔助。
-- **JavaScript/TypeScript 開發**：`esbenp.prettier-vscode`、`dbaeumer.vscode-eslint`，維持一致的程式碼格式與靜態分析。
-- **AI 助手整合**：`github.copilot`、`github.copilot-chat`、`anthropic.claude-code`、`openai.chatgpt`、`Google.geminicodeassist`，快速接入多家 AI 編程輔助工具。
-- **開發體驗優化**：`vscode-icons-team.vscode-icons`、`usernamehw.errorlens`、`wayou.vscode-todo-highlight`，改善檔案瀏覽、錯誤提示與 TODO 標註。
-- **專案管理**：`alefragnani.project-manager`，集中管理多個工作區與專案。
+## 核心特色
 
-## 提供以下 AI Agent 功能
+- **多重 AI CLI**：`@anthropic-ai/claude-code`、`@openai/codex`、`@google/gemini-cli`、`@vibe-kit/grok-cli`、`@github/copilot` 皆已全域安裝，另含 `@pimzino/claude-code-spec-workflow`、`ccusage`。
+- **自動化工作流**：內建 SuperClaude Framework 安裝腳本與 Spec Workflow 別名，快速啟用規格驅動開發。
+- **安全與一致性**：使用非 root 使用者、固定 UID/GID=1000，預掛載 `config/`、`workspace/`、`projects` 以保存設定與成果。
+- **啟動檢查機制**：容器啟動時自動檢查全域 CLI 是否過期，可選擇自動更新或僅提示更新指令。
+- **可擴充設計**：支援自訂 Node 版本、環境變數與 MCP server；利用 `config/` 目錄調整各 CLI 的 instructions/config。
 
-- [claude-code](https://www.npmjs.com/package/@anthropic-ai/claude-code)：Claude Code 是一款終端機 AI 編程助手，能理解您的程式碼庫，協助自動化日常任務、解釋複雜程式碼、處理 git 工作流，並可透過自然語言指令操作。
+## 目錄結構
 
-  - [SuperClaude_Framework](https://www.npmjs.com/package/@bifrost_inc/superclaude)：SuperClaude 是一套元編程配置框架，透過行為指令注入與元件協作，將 Claude Code 轉化為結構化開發平台，實現系統化工作流自動化與智慧代理協作。
-  - [Claude Code Spec Workflow](https://www.npmjs.com/package/@pimzino/claude-code-spec-workflow)：自動化 Claude Code 工作流，支援規格驅動開發（需求 → 設計 → 任務 → 實作）與快速修復 bug 流程（回報 → 分析 → 修復 → 驗證）。
-  - [ccusage](https://www.npmjs.com/package/ccusage)：分析本地 JSONL 檔案中的 Claude Code 使用情況的 CLI 工具。
+```text
+.
+├── Dockerfile                # 多階段建置與工具安裝腳本
+├── docker-compose.yml        # 容器服務、掛載與環境變數定義
+├── .env.example              # 範例環境設定
+├── USAGE.md                  # 詳細使用指南
+├── config/
+│   ├── scripts/              # 入口腳本與 CLI 更新檢查
+│   ├── claude/               # Claude Code、SuperClaude、Spec Workflow 設定
+│   ├── gemini/               # Gemini CLI 設定與系統提示
+│   ├── codex/                # Codex CLI profiles 與初始化腳本
+│   ├── gitconfig             # 預設 Git 設定
+│   └── ssh/                  # 掛載用 SSH 金鑰資料夾
+└── workspace/                # 與主機同步的開發目錄
+```
 
-- [codex-cli](https://www.npmjs.com/package/@openai/codex)：Codex CLI 是 OpenAI 推出的本地端 AI 編程代理，可直接在您的電腦上運行。
-- [gemini-cli](https://www.npmjs.com/package/@google/gemini-cli)：Gemini CLI 是開源 AI 代理，將 Gemini 的強大能力帶入終端機，讓您能以最直接的方式存取 Gemini 模型。
-- [grok-cli](https://www.npmjs.com/package/@vibe-kit/grok-cli)：Grok CLI 是一款對話式 AI 工具，具備智慧文字編輯與工具調用能力。
+## 快速開始
 
-## 其他功能
-
-- [spec-kit](https://github.com/github/spec-kit?tab=readme-ov-file#1-install-specify)：協助您快速開始規格驅動開發的工具包。
-
-## git 設定
-
-- git config --global core.autocrlf input
-- git config --global user.name "ai agent"
-- git config --global user.email "<aiagent@example.com>"
-
-## Docker 使用方式
-
-### 快速開始
-
-1. **複製環境設定檔**
+1. **準備環境變數**
 
    ```bash
    cp .env.example .env
+   # 編輯 .env 並填入 OPENAI_API_KEY、GEMINI_API_KEY、ANTHROPIC_API_KEY 等金鑰
    ```
 
-2. **編輯環境設定檔**
-
-   - 開啟 `.env` 檔案
-   - 填入您的 OpenAI API 金鑰、Gemini API 金鑰等
-   - 可選：調整 CLI 更新行為
-     - `CHECK_CLI_UPDATES=1` 啟用啟動時檢查全域 CLI 是否有更新（預設開啟）
-     - `CLI_AUTO_UPDATE=0` 啟用自動更新（設為 `1` 會在啟動時將偵測到過期的 CLI 以 `npm i -g <pkg>@latest` 更新）
-
-3. **建立並啟動容器**
+2. **建置並啟動容器**
 
    ```bash
-   # 啟動基本AI Agent容器
    docker-compose up -d
    ```
 
-4. **進入容器工作**
+3. **進入工作空間**
 
    ```bash
    docker-compose exec aiagent bash
    ```
 
-5. **設定 AI 工具別名 (可選)**
+4. **（可選）設定常用別名**
 
    ```bash
-   # 設定 Claude Code 別名
    bash ~/.claude/setup-claude.sh
-
-   # 設定 Gemini CLI 別名
    bash ~/.gemini/setup-gemini.sh
-
-   # 設定 Codex CLI 別名
    bash ~/.codex/setup-codex.sh
+   bash ~/.claude/setup-spec-workflow.sh   # 啟用 Spec Workflow 快捷指令
    ```
 
-### 檔案結構
+更多指令（重新建置、關閉容器等）請參考 [USAGE.md](USAGE.md)。
 
-```txt
-.
-├── Dockerfile              # Docker映像建構檔
-├── docker-compose.yml      # Docker Compose設定檔
-├── .env                    # 環境變數設定檔
-├── .env.example           # 環境變數範例檔
-├── USAGE.md               # 詳細使用說明
-├── config/                # 設定檔目錄
-│   ├── gitconfig          # Git設定檔
-│   ├── claude/            # Claude Code 全域配置
-│   │   ├── settings.json  # 使用者設定 (模型、編輯器等)
-│   │   ├── claude.json    # 主配置 (專案映射)
-│   │   ├── default_instructions.md # 全域系統提示
-│   │   └── setup-claude.sh # 快速設定腳本
-│   ├── gemini/            # Gemini CLI 配置
-│   │   ├── settings.json  # Gemini 設定檔
-│   │   ├── instructions.txt # Gemini 系統提示
-│   │   └── setup-gemini.sh # Gemini 設定腳本
-│   ├── codex/             # OpenAI Codex CLI 配置
-│   │   ├── config.toml    # Codex 主配置檔 (模型、行為等)
-│   │   ├── instructions.txt # Codex 系統提示
-│   │   └── setup-codex.sh # Codex 設定腳本
-│   └── ssh/               # SSH金鑰目錄
-└── workspace/             # 工作目錄 (掛載到容器內)
-```
+## 環境變數與設定
 
-### 功能特色
+| 變數                                                      | 預設值           | 說明                                                                  |
+| --------------------------------------------------------- | ---------------- | --------------------------------------------------------------------- |
+| `NODE_VERSION`                                            | `22`             | 建置時安裝的 Node.js 版本，可在 `.env` 或 `docker-compose.yml` 覆寫。 |
+| `OPENAI_API_KEY` / `GEMINI_API_KEY` / `ANTHROPIC_API_KEY` | `""`             | 各 CLI 所需的 API 金鑰。                                              |
+| `CHECK_CLI_UPDATES`                                       | `1`              | 啟動時是否檢查全域 CLI 更新。                                         |
+| `CLI_AUTO_UPDATE`                                         | `0`              | 是否在啟動時自動執行 `npm i -g <pkg>@latest`。                        |
+| `CHECK_CLI_PACKAGES`                                      | _(空白分隔字串)_ | 自訂要檢查的套件清單。                                                |
+| `GH_TOKEN`                                                | `""`             | GitHub Copilot CLI 使用的 PAT，適合在無瀏覽器環境登入。               |
+| `COPILOT_MODEL`                                           | `""`             | 指定 Copilot CLI 預設模型（視 CLI 版本支援情況）。                    |
 
-- **多版本支援**: 可透過環境變數指定 Node.js 版本
-- **資料持久化**: 工作目錄和設定檔案會持久化保存
-- **安全性**: 使用非 root 使用者執行容器
-- **全域配置**: 支援 Claude Code、Gemini CLI 與 Codex CLI 的全域設定管理
-- **便利別名**: 預設提供常用 AI 工具的快捷指令
+> 建議不要將 `.env` 檔案提交至版本控制，避免洩漏金鑰。可利用 `docker-compose` 的 `environment` 欄位或 CI 秘密管理服務提供變數。
 
-### 🔄 啟動時 CLI 版本檢查
+## 啟動時的 CLI 版本檢查
 
-容器每次啟動時，會檢查以下全域 npm CLI 是否有新版本，若非最新版則在啟動訊息中提示更新指令（不會自動更新）：
+容器啟動時，`entrypoint.sh` 會呼叫 `check-cli-updates.sh`：
 
-- `@openai/codex`
-- `@google/gemini-cli`
-- `@anthropic-ai/claude-code`
-- `@vibe-kit/grok-cli`
+1. 解析 `CHECK_CLI_PACKAGES`（預設包含 Codex、Gemini、Claude Code、Grok、Copilot）。
+2. 執行 `npm outdated -g` 判斷版本差異，失敗時不阻斷啟動。
+3. 若偵測到更新，顯示建議指令；當 `CLI_AUTO_UPDATE=1` 時，自動執行 `npm i -g <pkg>@latest`。
 
-運作方式：`config/scripts/entrypoint.sh` 會呼叫 `config/scripts/check-cli-updates.sh`，透過 `npm outdated -g --json` 比對目前已安裝版本與最新版本。若網路不可用或查詢失敗，將略過檢查且不影響容器啟動。
+## AI 工具速覽
 
-環境變數設定：
+| 工具               | 指令                                     | 補充                                                                                                                           |
+| ------------------ | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Claude Code        | `claude`, `claude chat`, `claude edit`   | `setup-claude.sh` 會加入 `cc`, `cchelp`, `cskip` 等 alias；`cskip` 會啟用 `--dangerously-skip-permissions`，僅適用於可信環境。 |
+| Gemini CLI         | `gemini`, `gemini chat`                  | `setup-gemini.sh` 可建立 `gchat` 等別名，並載入繁中說明的 instructions。                                                       |
+| Codex CLI          | `codex`, `codex --profile <name>`        | `config.toml` 已定義 OpenAI、Ollama、vLLM 等 profiles。                                                                        |
+| Grok CLI           | `grok`                                   | 由 Dockerfile 全域安裝，可直接對話。                                                                                           |
+| GitHub Copilot CLI | `copilot chat`, `copilot suggest`        | 建議預先設定 `GH_TOKEN` 以利無頭環境登入。                                                                                     |
+| Spec Workflow      | `claude-code-spec-workflow`, `spec-dash` | 透過 `setup-spec-workflow.sh` 追加 `spec-get-steering` 等 alias，搭配 `npx ... claude-spec-dashboard`。                        |
 
-- `CHECK_CLI_UPDATES`：預設 `1`（啟用）；設為 `0` 可停用啟動檢查。
-- `CLI_AUTO_UPDATE`：預設 `0`（關閉）；設為 `1` 於啟動時自動更新過期 CLI。
-- `CHECK_CLI_PACKAGES`：自訂要檢查的套件清單（以空白分隔）。
-- `GH_TOKEN`：GitHub Personal Access Token，用於在無瀏覽器或無頭環境下授權 `copilot` CLI。範例：
+## Git 與資料持久化
 
-  ```bash
-  GH_TOKEN=ghp_xxx... copilot auth login --with-token
-  ```
+- 預設 Git 設定可在容器內覆寫：`user.name`、`user.email`、`core.autocrlf=input`。
+- `workspace/` 目錄會與主機同步，便於在本地編輯；`projects` volume 可保存跨容器的專案資料。
+- `config/` 下的設定檔會掛載至容器的 `~/.claude`、`~/.gemini`、`~/.codex` 等路徑，方便版本控制與分享設定。
 
-- `COPILOT_MODEL`：（選用）指定 Copilot CLI 使用的模型名稱（視 `@github/copilot` 版本支援而定）。範例：
+## 疑難排解與延伸閱讀
 
-  ```bash
-  export COPILOT_MODEL=gpt-copilot-2024-11
-  copilot chat --model "$COPILOT_MODEL"
-  ```
+- 常見操作（重新建置、進入容器、檢查日誌、權限處理、API 金鑰問題、網路檢查）請參考 [USAGE.md](USAGE.md)。
+- 若要手動更新全域 CLI，可直接參考並執行 repo 中的檢查與更新腳本（config/scripts/check-cli-updates.sh）。該腳本會根據 CHECK_CLI_PACKAGES 檢查版本差異，並在設定 CLI_AUTO_UPDATE=1 時自動執行更新。範例：
 
-如果在容器中以非互動方式使用 Copilot CLI，建議在 `.env` 或 docker-compose 的 environment 欄位中設定 `GH_TOKEN`；若需指定模型，則加入 `COPILOT_MODEL`。請參照 `@github/copilot` 的官方文件確認可用模型名稱與可用旗標。
+  - 在容器內執行檢查並（可選）自動更新：
 
-docker-compose 範例：
+    ```bash
+    # 只檢查
+    docker-compose exec aiagent bash -lc "config/scripts/check-cli-updates.sh"
 
-```yaml
-services:
-  aiagent:
-    environment:
-      - CHECK_CLI_UPDATES=1
-      - CHECK_CLI_PACKAGES="@openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli"
-```
+    # 自動更新（在執行前可先設定環境變數）
+    docker-compose exec aiagent bash -lc "export CLI_AUTO_UPDATE=1 && config/scripts/check-cli-updates.sh"
+    ```
 
-範例輸出：
+  - 或直接手動更新指定套件：
 
-```text
-[cli-check] Checking CLI updates for: @openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli
-[cli-check] Updates available for the following global CLIs:
-  - @openai/codex: 1.2.3 -> 1.2.5
-  - @google/gemini-cli: 0.8.0 -> 0.9.1
+    ```bash
+    npm i -g @openai/codex@latest @google/gemini-cli@latest \
+      @anthropic-ai/claude-code@latest @vibe-kit/grok-cli@latest @github/copilot@latest
+    ```
 
-[cli-check] To update, run:
-  npm i -g @openai/codex@latest
-  npm i -g @google/gemini-cli@latest
+- SuperClaude 安裝日誌位於 `~/superclaude_install.log`，失敗時可在該檔案查詢原因。
 
-[cli-check] Set CHECK_CLI_UPDATES=0 to disable this check at startup.
-```
-
-手動更新指令（容器內）：
-
-```bash
-npm i -g @openai/codex@latest @google/gemini-cli@latest @anthropic-ai/claude-code@latest @vibe-kit/grok-cli@latest
-```
-
-### AI 工具使用方式
-
-進入容器後，可直接使用以下 AI CLI 工具：
-
-#### Claude Code
-
-```bash
-claude chat                # 啟動對話模式
-claude edit                # 進入編輯模式
-cchelp                     # 使用預設指令聊天 (需先執行 setup-claude.sh)
-cc                         # claude 的簡易別名
-cskip                      # 跳過權限提示 (危險) -> 相當於 `claude --dangerously-skip-permissions`
-```
-
-注意：`cskip` 會使用 `--dangerously-skip-permissions` 跳過權限確認，僅建議在信任的專案與環境下使用，並充分了解其風險。
-
-#### Gemini CLI
-
-```bash
-gemini chat                # 啟動對話模式
-gchat                      # 使用預設指令聊天 (需先執行 setup-gemini.sh)
-```
-
-#### Codex CLI
-
-```bash
-codex                      # 啟動 OpenAI Codex CLI
-cx                         # codex 的簡易別名 (需先執行 setup-codex.sh)
-cxanalyze <file>           # 分析程式碼檔案
-cxrefactor <file>          # 重構程式碼
-cxexplain <file>           # 解釋程式碼
-```
-
-#### 其他工具
-
-#### GitHub Copilot CLI
-
-```bash
-copilot auth login        # 使用瀏覽器或 token 登入
-copilot chat              # 以對話方式使用 Copilot
-copilot suggest <file>    # 針對檔案或選取範圍提出程式建議
-```
-
-注意：本專案的 `Dockerfile` 在全域 npm 安裝清單中包含 `@github/copilot`（視映像建構時的環境而定）。若在無瀏覽器或 CI/無頭環境使用 Copilot CLI，可透過環境變數 `GH_TOKEN` (Personal Access Token) 進行授權 (見下方進階設定)。
-
-```bash
-grok                                   # 啟動 Grok CLI
-claude-code-spec-workflow              # 啟動規格/bug 工作流主指令 (已全域安裝)
-npx -p @pimzino/claude-code-spec-workflow claude-spec-dashboard   # 啟動即時 Dashboard
-ccusage --version                      # 查看 ccusage 版本
-ccusage --help                         # 查看 ccusage 指令說明
-```
-
-#### Claude Code Spec Workflow 快速示例
-
-```bash
-# 在專案目錄建立 .claude 結構
-claude-code-spec-workflow
-
-# 建立 Steering 文件 (product.md / tech.md / structure.md)
-claude /spec-steering-setup
-
-# 建立新功能規格
-/spec-create user-auth "User auth system"
-
-# 執行第一個任務 (task 1)
-/spec-execute 1 user-auth
-
-# 啟動 Dashboard 進行可視化追蹤
-npx -p @pimzino/claude-code-spec-workflow claude-spec-dashboard
-```
-
-可使用 `config/claude/setup-spec-workflow.sh` 腳本追加常用 alias：
-
-```bash
-bash ~/.claude/setup-spec-workflow.sh
-spec-get-steering             # 載入 steering context
-spec-get-spec feature-name    # 載入指定功能規格 context
-spec-dash                     # 啟動 Dashboard
-```
-
-詳細使用方式請參考 `USAGE.md`。
-
-### 進階設定
-
-可於 `.env` 檔案自訂參數：
-
-- `NODE_VERSION`：指定 Node.js 版本
-- `CHECK_CLI_UPDATES`：是否在啟動時檢查 CLI 更新（1/0）
-- `CLI_AUTO_UPDATE`：是否在啟動時自動更新過期 CLI（1/0）
-- `CHECK_CLI_PACKAGES`：自訂需要檢查更新的 CLI 套件清單
-
-修改後請重新建構映像：
-
-```bash
-docker-compose build --no-cache
-```
+歡迎將 Dev-Ai-Agent 作為 AI 助手或自動化開發環境的基礎，依需求擴充更多 CLI、腳本與服務！
