@@ -120,13 +120,7 @@ RUN --mount=type=cache,target=/home/aiagent/.cache/uv,uid=1000,gid=1000 \
     "$HOME/.local/bin/uv" --version; \
     echo '[spec-kit] 預熱 specify'; \
     "$HOME/.local/bin/uvx" --from ${SPEC_KIT_REPO} specify --help >/dev/null; \
-    cat > /home/aiagent/bin/specify <<EOF
-#!/usr/bin/env bash
-export PATH="\$HOME/.local/bin:\$PATH"
-exec uvx --from ${SPEC_KIT_REPO} specify "\$@"
-EOF
-
-RUN set -eux; \
+    printf '%s\n' "#!/usr/bin/env bash" "export PATH=\"\$HOME/.local/bin:\$PATH\"" "exec uvx --from ${SPEC_KIT_REPO} specify \"\$@\"" > /home/aiagent/bin/specify; \
     chmod +x /home/aiagent/bin/specify; \
     ln -s "$HOME/.local/bin/uv"  /home/aiagent/bin/uv  || true; \
     ln -s "$HOME/.local/bin/uvx" /home/aiagent/bin/uvx || true; \
@@ -143,15 +137,15 @@ RUN set -eux; \
     '# 任務拆解: tasks' > /home/aiagent/bin/spec-kit-notes.txt
 
 # Shell 環境設定（NVM + PATH；一次性加入 .bashrc/.profile）
-RUN cat <<'EOF' >> ~/.bashrc
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] &&  . "$NVM_DIR/nvm.sh"
-[ -s "$NVM_DIR/bash_completion" ] &&  . "$NVM_DIR/bash_completion"
-nvm use ${NODE_VERSION} > /dev/null 2>&1
-export PATH="$NVM_DIR/versions/node/v${NODE_VERSION}/bin:$HOME/.local/bin:$HOME/bin:$PATH"
-EOF
-
-RUN cp ~/.bashrc ~/.profile
+RUN set -eux; \
+    printf '%s\n' \
+    'export NVM_DIR="\$HOME/.nvm"' \
+    '[ -s "\$NVM_DIR/nvm.sh" ] &&  . "\$NVM_DIR/nvm.sh"' \
+    '[ -s "\$NVM_DIR/bash_completion" ] &&  . "\$NVM_DIR/bash_completion"' \
+    "nvm use ${NODE_VERSION} > /dev/null 2>&1" \
+    "export PATH=\"\$NVM_DIR/versions/node/v${NODE_VERSION}/bin:\$HOME/.local/bin:\$HOME/bin:\$PATH\"" \
+    > ~/.bashrc; \
+    cp ~/.bashrc ~/.profile
 
 # SuperClaude 安裝（外部腳本；保持快取與教學導向日誌）
 COPY --chown=aiagent:aiagent --chmod=755 config/claude/setup-SuperClaude.sh /home/aiagent/setup-SuperClaude.sh
