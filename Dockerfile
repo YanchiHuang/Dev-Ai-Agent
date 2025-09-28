@@ -28,6 +28,7 @@ LABEL org.opencontainers.image.licenses="AGPL-3.0"
 ENV DEBIAN_FRONTEND=noninteractive
 
 # 套件清單按字母序，便於檢視差異；同層清理 apt 緩存
+# hadolint ignore=DL3008  # 使用發行版預設版本以維持安全更新
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     set -eux; \
@@ -67,6 +68,7 @@ ENV NVM_DIR=/home/aiagent/.nvm \
     SPEC_KIT_REPO=${SPEC_KIT_REPO}
 
 # 僅 builder 需要的建置工具；同層清理
+# hadolint ignore=DL3008  # 開發工具同樣依賴發行版版本維護
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     set -eux; \
@@ -94,26 +96,37 @@ RUN mkdir -p config workspace .ssh projects .gemini bin \
     && chmod 700 .ssh
 
 # 安裝 NVM + Node + 全域 npm CLI
-SHELL ["/bin/bash","-lc"]
-RUN set -euxo pipefail; \
+SHELL ["/bin/bash","-o","pipefail","-c"]
+RUN set -eux; \
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh | bash; \
     source "$NVM_DIR/nvm.sh"; \
     nvm install ${NODE_VERSION}; \
     nvm alias default ${NODE_VERSION}; \
     nvm use ${NODE_VERSION}; \
+    # hadolint ignore=DL3016  # CLI 套件需與雲端服務同步最新版本
     npm install -g ${GLOBAL_NPM_PACKAGES}; \
     npm cache clean --force; \
     echo "[builder] Node $(node -v) 完成, npm global 安裝完成"
 
 # 安裝 uv + 預熱 spec-kit（使用 pipx、保留教學 alias 與 notes）
+# 將 heredoc 與後續 shell 命令拆成兩個 RUN，以避免 Dockerfile 解析 heredoc 後
+# 將後續 shell 命令誤認為新指令（例如出現 "unknown instruction: chmod" 的錯誤）。
+# shellcheck disable=SC2016  # 需在檔案中保留未展開的 $HOME 與 "$@" 字樣
 RUN --mount=type=cache,target=/home/aiagent/.cache/uv,uid=1000,gid=1000 \
-    set -euxo pipefail; \
+    set -eux; \
     export PATH="$HOME/.local/bin:$PATH"; \
+    # hadolint ignore=DL3013  # 需安裝 uv 最新版以獲得錯誤修正
     pipx install --pip-args='--no-cache-dir' uv || echo 'uv already installed'; \
     "$HOME/.local/bin/uv" --version; \
     echo '[spec-kit] 預熱 specify'; \
     "$HOME/.local/bin/uvx" --from ${SPEC_KIT_REPO} specify --help >/dev/null; \
-    printf '#!/usr/bin/env bash\nexport PATH="$HOME/.local/bin:$PATH"\nexec uvx --from %s specify "$@"\n' "$SPEC_KIT_REPO" > /home/aiagent/bin/specify; \
+    cat > /home/aiagent/bin/specify <<EOF
+#!/usr/bin/env bash
+export PATH="\$HOME/.local/bin:\$PATH"
+exec uvx --from ${SPEC_KIT_REPO} specify "\$@"
+EOF
+
+RUN set -eux; \
     chmod +x /home/aiagent/bin/specify; \
     ln -s "$HOME/.local/bin/uv"  /home/aiagent/bin/uv  || true; \
     ln -s "$HOME/.local/bin/uvx" /home/aiagent/bin/uvx || true; \
@@ -130,12 +143,15 @@ RUN --mount=type=cache,target=/home/aiagent/.cache/uv,uid=1000,gid=1000 \
     '# 任務拆解: tasks' > /home/aiagent/bin/spec-kit-notes.txt
 
 # Shell 環境設定（NVM + PATH；一次性加入 .bashrc/.profile）
-RUN echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc \
-    && echo '[ -s "$NVM_DIR/nvm.sh" ] &&  . "$NVM_DIR/nvm.sh"' >> ~/.bashrc \
-    && echo '[ -s "$NVM_DIR/bash_completion" ] &&  . "$NVM_DIR/bash_completion"' >> ~/.bashrc \
-    && echo "nvm use ${NODE_VERSION} > /dev/null 2>&1" >> ~/.bashrc \
-    && echo 'export PATH="$NVM_DIR/versions/node/v'$NODE_VERSION'/bin:$HOME/.local/bin:$HOME/bin:$PATH"' >> ~/.bashrc \
-    && cp ~/.bashrc ~/.profile
+RUN cat <<'EOF' >> ~/.bashrc
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] &&  . "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] &&  . "$NVM_DIR/bash_completion"
+nvm use ${NODE_VERSION} > /dev/null 2>&1
+export PATH="$NVM_DIR/versions/node/v${NODE_VERSION}/bin:$HOME/.local/bin:$HOME/bin:$PATH"
+EOF
+
+RUN cp ~/.bashrc ~/.profile
 
 # SuperClaude 安裝（外部腳本；保持快取與教學導向日誌）
 COPY --chown=aiagent:aiagent --chmod=755 config/claude/setup-SuperClaude.sh /home/aiagent/setup-SuperClaude.sh
@@ -156,6 +172,7 @@ ARG SUPERCLAUDE_INSTALLER
 ARG NVM_VERSION
 ARG SPEC_KIT_REPO
 ARG GLOBAL_NPM_PACKAGES
+SHELL ["/bin/bash","-o","pipefail","-c"]
 LABEL org.opencontainers.image.source="https://github.com/YanchiHuang/Dev-Ai-Agent"
 LABEL org.opencontainers.image.description="Dev-Ai-Agent 是一款專為 AI 開發者打造的容器 (multi-stage optimized)"
 LABEL org.opencontainers.image.licenses="AGPL-3.0"
@@ -168,6 +185,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     CHECK_CLI_PACKAGES="@openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli @github/copilot"
 
 # 執行期需用到的 GitHub CLI（保持最小依賴）
+# hadolint ignore=DL3008  # 最小化依賴，沿用官方 gh 套件庫版本
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     set -eux; \
@@ -209,7 +227,7 @@ WORKDIR /home/aiagent/workspace
 # PATH：提供非互動 shell 也能直接叫到 node/npm/npx/uv 等
 ENV PATH="/home/aiagent/.nvm/versions/node/v${NODE_VERSION}/bin:/home/aiagent/.local/bin:/home/aiagent/bin:${PATH}"
 
-SHELL ["/bin/bash","-lc"]
+SHELL ["/bin/bash","-o","pipefail","-c"]
 # 一次性寫入 ~/.profile（取代原先的「grep 然後再 printf 覆蓋」的重複流程）
 RUN set -eux; \
     if [ -d "$NVM_DIR/versions/node/v${NODE_VERSION}/bin" ]; then \
@@ -217,10 +235,10 @@ RUN set -eux; \
     ln -sf $NVM_DIR/versions/node/v${NODE_VERSION}/bin/npm  /usr/local/bin/npm  || true; \
     ln -sf $NVM_DIR/versions/node/v${NODE_VERSION}/bin/npx  /usr/local/bin/npx  || true; \
     fi; \
-    cat > /home/aiagent/.profile <<'EOF'
-export NVM_DIR="$HOME/.nvm"
-export PATH="$HOME/.local/bin:$HOME/bin:$NVM_DIR/versions/node/v'"${NODE_VERSION}"'/bin:$PATH"
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+    cat > /home/aiagent/.profile <<EOF
+export NVM_DIR="\$HOME/.nvm"
+export PATH="\$HOME/.local/bin:\$HOME/bin:\$NVM_DIR/versions/node/v${NODE_VERSION}/bin:\$PATH"
+[ -s "\$NVM_DIR/nvm.sh" ] && . "\$NVM_DIR/nvm.sh"
 # 非互動 shell 也能使用預設 NODE_VERSION；若未安裝則嘗試安裝（開發友善）
 nvm use ${NODE_VERSION} > /dev/null 2>&1 || nvm install ${NODE_VERSION}
 EOF
