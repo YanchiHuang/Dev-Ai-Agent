@@ -215,7 +215,6 @@ COPY --chown=aiagent:aiagent --chmod=755 config/scripts/entrypoint.sh        /ho
 
 # 預設工作目錄與掛載點
 RUN mkdir -p workspace projects .ssh .gemini config
-VOLUME ["/home/aiagent/.config"]
 WORKDIR /home/aiagent/workspace
 
 # PATH：提供非互動 shell 也能直接叫到 node/npm/npx/uv 等
