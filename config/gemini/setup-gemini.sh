@@ -6,6 +6,7 @@ echo "🛠 初始化 Gemini CLI 全域設定..."
 # 建立 alias 到 .bashrc
 if ! grep -q "alias gchat" ~/.bashrc; then
     echo "alias gchat='gemini chat --instructions ~/.gemini/instructions.txt'" >> ~/.bashrc
+    echo "alias ggod='gemini --yolo'" >> ~/.bashrc
     echo "✅ 已添加 gchat alias 到 .bashrc"
 else
     echo "ℹ️  gchat alias 已存在於 .bashrc"

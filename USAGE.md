@@ -63,6 +63,9 @@ docker exec -it aiagent bash
 ### Claude Code CLI
 
 ```bash
+# 建議先執行一次設定腳本以安裝 alias
+bash ~/.claude/setup-claude.sh
+
 # 初始化 Claude Code
 claude
 
@@ -74,26 +77,45 @@ claude "請幫我分析這個程式碼"
 
 # 跳過權限提示 (危險) — 需信任環境才使用
 cskip  # 等同於：claude --dangerously-skip-permissions
+# 完全跳過權限與安全防護 (極度危險)
+ccgod  # 等同於：claude --dangerously-skip-permissions
 ```
 
-注意：`cskip` 會直接跳過 Claude Code 的權限請求流程，可能導致未經確認的檔案/命令操作，請僅在可信任的倉庫與可控環境使用。
+注意：`cskip` 與 `ccgod` 會直接跳過 Claude Code 的權限請求流程，可能導致未經確認的檔案/命令操作，請僅在可信任的倉庫與可控環境使用。
 
 ### Codex CLI (OpenAI)
 
 ```bash
+# 建議先執行一次設定腳本以安裝 alias
+bash ~/.codex/setup-codex.sh
+
 # 登入
 codex login
 
 # 使用 codex-cli
 codex "write a python function to sort a list"
+
+# 跳過 sandbox/審核 (極度危險)
+cxgod "deploy my app"  # 等同於：codex --dangerously-bypass-approvals-and-sandbox "deploy my app"
 ```
+
+注意：`cxgod` 會跳過 Codex CLI 的 sandbox 與審核步驟，請僅在完全受控的環境執行。
 
 ### Gemini CLI
 
 ```bash
+# 建議先執行一次設定腳本以安裝 alias
+bash ~/.gemini/setup-gemini.sh
+
 # 使用 gemini-cli
 gemini "explain this code snippet"
+
+# 使用快速別名（含高風險指令）
+gchat "請用繁中說明這段程式"  # 一般聊天快捷指令
+ggod "直接改寫整個專案"       # 等同於：gemini --yolo "直接改寫整個專案"
 ```
+
+注意：`ggod` 會以 `--yolo` 模式執行 Gemini CLI，跳過額外提示或確認。請僅在完全信任的專案環境內使用。
 
 ## 檔案管理
 

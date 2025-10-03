@@ -15,6 +15,7 @@ ALIASES=(
     "alias cxhelp='codex --help'"
     "alias cxconfig='codex --config ~/.codex/config.toml'"
     "alias cxfile='codex --file'"
+    "alias cxgod='codex --dangerously-bypass-approvals-and-sandbox'"
 )
 
 for alias_cmd in "${ALIASES[@]}"; do

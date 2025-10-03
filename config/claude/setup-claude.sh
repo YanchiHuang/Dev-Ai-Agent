@@ -14,6 +14,8 @@ alias cchat='claude chat'
 alias cedit='claude edit'
 alias cconfig='claude config'
 alias cinit='claude init'
+# ⚠️ Danger: runs Claude with all permission prompts skipped.
+alias ccgod='claude --dangerously-skip-permissions'
 
 # Skip permission prompts (use with caution)
 alias cskip='claude --dangerously-skip-permissions'
