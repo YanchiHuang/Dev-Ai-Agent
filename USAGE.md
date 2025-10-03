@@ -95,6 +95,15 @@ codex "write a python function to sort a list"
 gemini "explain this code snippet"
 ```
 
+### GitHub Copilot CLI
+
+```bash
+# （可選）啟用 ctgod alias，讓 Copilot 以 --allow-all-tools 執行
+bash config/scripts/setup-copilot-godmode.sh
+```
+
+> ⚠️ 警告：`ctgod` 會以 `copilot --allow-all-tools` 形式執行，跳過工具權限確認步驟，可能在未提示的情況下呼叫外部指令或修改檔案。請僅在完全信任的專案與執行環境中啟用，並確保瞭解其中風險。
+
 ## 檔案管理
 
 ### 工作目錄
