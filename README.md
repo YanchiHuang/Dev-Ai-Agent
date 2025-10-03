@@ -78,6 +78,7 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
    bash ~/.gemini/setup-gemini.sh
    bash ~/.codex/setup-codex.sh
    bash ~/.claude/setup-spec-workflow.sh   # 啟用 Spec Workflow 快捷指令
+   bash config/scripts/setup-copilot-godmode.sh  # 啟用 ctgod（Copilot --allow-all-tools，請確認環境安全）
    ```
 
 更多指令（重新建置、關閉容器等）請參考 [USAGE.md](USAGE.md)。
