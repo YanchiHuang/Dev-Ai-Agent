@@ -17,6 +17,7 @@
     "anthropic.claude-code",
     "openai.chatgpt",
     "Google.geminicodeassist",
+    "Google.gemini-cli-vscode-ide-companion",
     // 開發體驗增強
     "vscode-icons-team.vscode-icons",
     "usernamehw.errorlens",
