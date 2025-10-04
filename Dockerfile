@@ -190,7 +190,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
     > /etc/apt/sources.list.d/github-cli.list; \
     apt-get update; \
-    apt-get install -y --no-install-recommends gh; \
+    apt-get install -y --no-install-recommends gh python3 python3-pip pipx; \
     rm -rf /var/lib/apt/lists/*
 
 # 建立與 builder 一致的非 root 使用者
@@ -205,6 +205,8 @@ WORKDIR /home/aiagent
 COPY --chown=aiagent:aiagent --from=builder /home/aiagent/.nvm                 /home/aiagent/.nvm
 COPY --chown=aiagent:aiagent --from=builder /home/aiagent/bin                  /home/aiagent/bin
 COPY --chown=aiagent:aiagent --from=builder /home/aiagent/.local/bin           /home/aiagent/.local/bin
+COPY --chown=aiagent:aiagent --from=builder /home/aiagent/.local/pipx          /home/aiagent/.local/pipx
+COPY --chown=aiagent:aiagent --from=builder /home/aiagent/.local/share/pipx    /home/aiagent/.local/share/pipx
 COPY --chown=aiagent:aiagent --from=builder /home/aiagent/.bashrc              /home/aiagent/.bashrc
 COPY --chown=aiagent:aiagent --from=builder /home/aiagent/.gitconfig           /home/aiagent/.gitconfig
 COPY --chown=aiagent:aiagent --from=builder /home/aiagent/superclaude_install.log /home/aiagent/superclaude_install.log
@@ -219,7 +221,8 @@ RUN mkdir -p workspace projects .ssh .gemini config
 WORKDIR /home/aiagent/workspace
 
 # PATH：提供非互動 shell 也能直接叫到 node/npm/npx/uv 等
-ENV PATH="/home/aiagent/.nvm/versions/node/current/bin:/home/aiagent/.local/bin:/home/aiagent/bin:${PATH}"
+ENV PATH="/home/aiagent/.local/bin:/home/aiagent/.local/pipx/venvs/uv/bin:/home/aiagent/bin:/home/aiagent/.nvm/versions/node/current/bin:${PATH}"
+ENV BASH_ENV=/home/aiagent/.bashrc
 
 SHELL ["/bin/bash","-o","pipefail","-c"]
 # 一次性寫入 ~/.profile（取代原先的「grep 然後再 printf 覆蓋」的重複流程）
@@ -237,6 +240,14 @@ export PATH="\$HOME/.local/bin:\$HOME/bin:\$NVM_DIR/versions/node/current/bin:\$
 # 非互動 shell 也能使用預設 NODE_VERSION；若未安裝則嘗試安裝（開發友善）
 nvm use ${NODE_VERSION} > /dev/null 2>&1 || nvm install ${NODE_VERSION}
 EOF
+
+RUN set -eux; \
+    pipx ensurepath; \
+    if ! command -v uvx >/dev/null 2>&1; then \
+    pipx install --force uv; \
+    fi; \
+    uvx --version; \
+    echo "[final] uvx installed and working."
 
 # 健康檢查：Node 可用即視為健康
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
