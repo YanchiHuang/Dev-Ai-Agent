@@ -148,7 +148,7 @@ RUN set -eux; \
     cp ~/.bashrc ~/.profile
 
 # SuperClaude 安裝（外部腳本；保持快取與教學導向日誌）
-COPY --chown=aiagent:aiagent --chmod=755 config/claude/setup-SuperClaude.sh /home/aiagent/setup-SuperClaude.sh
+COPY --chown=aiagent:aiagent --chmod=755 config/scripts/setup-SuperClaude.sh /home/aiagent/setup-SuperClaude.sh
 RUN set -euxo pipefail; \
     echo "[SuperClaude] Python: $(python3 --version)"; \
     echo "[SuperClaude] Node: $(node --version)"; \
