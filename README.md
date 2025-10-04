@@ -89,13 +89,33 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 | --------------------------------------------------------- | ---------------- | --------------------------------------------------------------------- |
 | `NODE_VERSION`                                            | `22`             | 建置時安裝的 Node.js 版本，可在 `.env` 或 `docker-compose.yml` 覆寫。 |
 | `OPENAI_API_KEY` / `GEMINI_API_KEY` / `ANTHROPIC_API_KEY` | `""`             | 各 CLI 所需的 API 金鑰。                                              |
-| `CHECK_CLI_UPDATES`                                       | `1`              | 啟動時是否檢查全域 CLI 更新。                                         |
-| `CLI_AUTO_UPDATE`                                         | `0`              | 是否在啟動時自動執行 `npm i -g <pkg>@latest`。                        |
+| `CLAUDE_CODE_MODEL` / `OPENAI_MODEL` / `GEMINI_MODEL`     | `""`             | (可選) 指定各 AI 工具使用的模型。                                     |
+| `TZ`                                                      | `UTC`            | 設定容器的時區，例如 `Asia/Taipei`。                                  |
+| `CHECK_CLI_UPDATES`                                       | `1`              | 啟動時是否檢查全域 CLI 更新 (1=啟用, 0=停用)。                      |
+| `CLI_AUTO_UPDATE`                                         | `0`              | 是否在啟動時自動更新過期的 CLI (1=啟用, 0=停用)。                    |
 | `CHECK_CLI_PACKAGES`                                      | _(空白分隔字串)_ | 自訂要檢查的套件清單。                                                |
 | `GH_TOKEN`                                                | `""`             | GitHub Copilot CLI 使用的 PAT，適合在無瀏覽器環境登入。               |
 | `COPILOT_MODEL`                                           | `""`             | 指定 Copilot CLI 預設模型（視 CLI 版本支援情況）。                    |
 
 > 建議不要將 `.env` 檔案提交至版本控制，避免洩漏金鑰。可利用 `docker-compose` 的 `environment` 欄位或 CI 秘密管理服務提供變數。
+
+## 開發環境建議
+
+為了獲得最佳的開發體驗，建議在 VS Code 中安裝以下擴充套件。這些建議已包含在 `.vscode/extensions.json` 中，當您用 VS Code 開啟此專案時，右下角會自動提示安裝。
+
+- **Docker**: `ms-azuretools.vscode-docker` - 管理容器與映像檔。
+- **YAML**: `redhat.vscode-yaml` - 編輯 `docker-compose.yml` 的好幫手。
+- **Git**: `eamodio.gitlens` - 強大的 Git 可視化工具。
+- **AI 助理**:
+  - `github.copilot` & `github.copilot-chat`
+  - `anthropic.claude-code`
+  - `Google.geminicodeassist`
+- **程式碼品質與格式化**:
+  - `esbenp.prettier-vscode` - 自動格式化。
+  - `dbaeumer.vscode-eslint` - 語法檢查。
+- **其他實用工具**:
+  - `vscode-icons-team.vscode-icons` - 美化檔案總管的圖示。
+  - `usernamehw.errorlens` - 將錯誤與警告直接顯示在程式碼行。
 
 ## 啟動時的 CLI 版本檢查
 
@@ -118,9 +138,15 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 
 ## Git 與資料持久化
 
-- 預設 Git 設定可在容器內覆寫：`user.name`、`user.email`、`core.autocrlf=input`。
-- `workspace/` 目錄會與主機同步，便於在本地編輯；`projects` volume 可保存跨容器的專案資料。
-- `config/` 下的設定檔會掛載至容器的 `~/.claude`、`~/.gemini`、`~/.codex` 等路徑，方便版本控制與分享設定。
+本專案透過兩種方式實現資料持久化，確保您的工作成果和設定不會因容器停止而遺失：
+
+- **`workspace/` (同步目錄)**: 這是您的主要開發目錄，它會**即時**與主機上的 `workspace/` 資料夾雙向同步。適合放置您希望在主機上使用 IDE 或編輯器直接存取的專案檔案。
+
+- **`projects` (具名資料卷)**: 這是一個由 Docker 管理的具名資料卷 (named volume)，掛載於容器內的 `/home/aiagent/projects`。它適合用來存放不需要在主機上頻繁直接編輯，但希望在不同專案或容器生命週期之間長期保存的資料，例如大型資料集、測試成品或次要專案。
+
+- **`config/` (設定檔掛載)**: 所有 `config/` 目錄下的設定檔會分別掛載至容器內對應的家目錄路徑 (例如 `~/.claude`, `~/.gemini`)。這讓您可以直接在主機上版本控制所有 AI 工具的設定。
+
+- **Git 設定**: 預設的 Git 設定 (`user.name`, `user.email`) 可在容器內隨時透過 `git config --global` 指令覆寫。
 
 ## 疑難排解與延伸閱讀
 

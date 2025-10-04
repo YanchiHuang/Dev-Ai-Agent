@@ -22,17 +22,44 @@ cd <project-directory>
 cp .env.example .env
 ```
 
-編輯 `.env` 檔案，填入您的 API 金鑰：
+編輯 `.env` 檔案，填入您的 API 金鑰與個人化設定：
 
 ```bash
-# 必要設定
+# -------------------------
+# --- AI API 金鑰 (必要) ---
+# -------------------------
 OPENAI_API_KEY=your_openai_api_key_here
 GEMINI_API_KEY=your_gemini_api_key_here
 ANTHROPIC_API_KEY=your_anthropic_api_key_here
 
-# 可選設定
+# ----------------------------------
+# --- GitHub Copilot 設定 (可選) ---
+# ----------------------------------
+# 建議填寫 GH_TOKEN 以便在無瀏覽器環境中登入
+GH_TOKEN=""
+# 指定 Copilot 模型 (視 CLI 版本支援情況)
+COPILOT_MODEL=""
+
+# --------------------------
+# --- AI 模型設定 (可選) ---
+# --------------------------
+# CLAUDE_CODE_MODEL=claude-3-sonnet-20240229
+# OPENAI_MODEL=gpt-4
+# GEMINI_MODEL=gemini-pro
+
+# -------------------------
+# --- 容器環境設定 (可選) ---
+# -------------------------
+# Node.js 版本 (預設: 22)
 NODE_VERSION=22
+
+# 設定您的時區 (預設: UTC)
+TZ=Asia/Taipei
+
+# 啟動時檢查 CLI 更新 (1=啟用, 0=停用)
 CHECK_CLI_UPDATES=1
+
+# 自動更新過期的 CLI (1=啟用, 0=停用)
 CLI_AUTO_UPDATE=0
 ```
 
@@ -126,30 +153,32 @@ bash config/scripts/setup-copilot-godmode.sh
 
 > ⚠️ 警告：`ctgod` 會以 `copilot --allow-all-tools` 形式執行，跳過工具權限確認步驟，可能在未提示的情況下呼叫外部指令或修改檔案。請僅在完全信任的專案與執行環境中啟用，並確保瞭解其中風險。
 
-## 檔案管理
+## 檔案管理與資料持久化
 
-### 工作目錄
+本專案透過 `docker-compose.yml` 中的 `volumes` 設定，確保您的設定與工作成果得以保存。
 
-- 容器內工作目錄：`/home/aiagent/workspace`
-- 主機掛載目錄：`./workspace`
+### 主要工作目錄
 
-所有在 `workspace` 目錄中的檔案會在主機和容器間同步。
+- **`workspace/` (同步目錄)**
+  - **容器內路徑**: `/home/aiagent/workspace`
+  - **主機對應路徑**: `./workspace`
+  - **說明**: 這是您的主要開發目錄，它會**即時**與主機上的 `workspace/` 資料夾雙向同步。所有您在此目錄中建立或修改的檔案，都可以直接在主機上用您偏好的 IDE 或編輯器開啟。
+
+- **`projects/` (具名資料卷)**
+  - **容器內路徑**: `/home/aiagent/projects`
+  - **說明**: 這是一個由 Docker 管理的具名資料卷 (named volume)，適合存放不需要在主機上頻繁直接編輯，但希望在容器生命週期之間長期保存的資料，例如大型資料集、測試成品或次要專案。
+
+### 設定檔掛載
+
+- **`config/`**: 主機上的 `config` 目錄下的各工具設定檔 (如 `gemini`, `claude`, `codex`) 會被分別掛載至容器內家目錄的對應路徑 (如 `~/.gemini`)。這讓您可以直接在主機上透過 Git 版本控制所有 AI 工具的設定。
 
 ### SSH 金鑰
 
-將您的 SSH 金鑰放置在主機的 `~/.ssh` 目錄，容器會自動掛載（唯讀）。
+- 您的 SSH 金鑰 (`~/.ssh`) 會以**唯讀**模式掛載到容器中，方便您執行 Git 操作 (如 `git clone`, `git push`) 而無需在容器內重新設定金鑰。
 
 ### Git 設定
 
-容器內已預設 Git 配置：
-
-```bash
-git config --global user.name "ai agent"
-git config --global user.email "aiagent@example.com"
-git config --global core.autocrlf input
-```
-
-您可以在容器內修改這些設定。
+容器內已預設 Git 配置 (`.gitconfig`)，您隨時可以在容器內透過 `git config --global` 指令修改 `user.name` 和 `user.email`。
 
 ## 常用操作
 
