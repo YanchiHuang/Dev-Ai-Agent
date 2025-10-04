@@ -140,9 +140,9 @@ RUN --mount=type=cache,target=/home/aiagent/.cache/uv,uid=1000,gid=1000 \
 # Shell 環境設定（NVM + PATH；一次性加入 .bashrc/.profile）
 RUN set -eux; \
     printf '%s\n' \
-    'export NVM_DIR="\$HOME/.nvm"' \
-    '[ -s "\$NVM_DIR/nvm.sh" ] &&  . "\$NVM_DIR/nvm.sh"' \
-    '[ -s "\$NVM_DIR/bash_completion" ] &&  . "\$NVM_DIR/bash_completion"' \
+    "export NVM_DIR=\"\$HOME/.nvm\"" \
+    "[ -s \"\$NVM_DIR/nvm.sh\" ] &&  . \"\$NVM_DIR/nvm.sh\"" \
+    "[ -s \"\$NVM_DIR/bash_completion\" ] &&  . \"\$NVM_DIR/bash_completion\"" \
     "nvm use ${NODE_VERSION} > /dev/null 2>&1" \
     "export PATH=\"\$NVM_DIR/versions/node/current/bin:\$HOME/.local/bin:\$HOME/bin:\$PATH\"" \
     > ~/.bashrc; \
@@ -167,6 +167,7 @@ ARG SUPERCLAUDE_INSTALLER
 ARG NVM_VERSION
 ARG SPEC_KIT_REPO
 ARG GLOBAL_NPM_PACKAGES
+ARG UV_VERSION=0.4.20
 SHELL ["/bin/bash","-o","pipefail","-c"]
 LABEL org.opencontainers.image.source="https://github.com/YanchiHuang/Dev-Ai-Agent"
 LABEL org.opencontainers.image.description="Dev-Ai-Agent 是一款專為 AI 開發者打造的容器 (multi-stage optimized)"
@@ -206,7 +207,6 @@ COPY --chown=aiagent:aiagent --from=builder /home/aiagent/.nvm                 /
 COPY --chown=aiagent:aiagent --from=builder /home/aiagent/bin                  /home/aiagent/bin
 COPY --chown=aiagent:aiagent --from=builder /home/aiagent/.local/bin           /home/aiagent/.local/bin
 COPY --chown=aiagent:aiagent --from=builder /home/aiagent/.local/pipx          /home/aiagent/.local/pipx
-COPY --chown=aiagent:aiagent --from=builder /home/aiagent/.local/share/pipx    /home/aiagent/.local/share/pipx
 COPY --chown=aiagent:aiagent --from=builder /home/aiagent/.bashrc              /home/aiagent/.bashrc
 COPY --chown=aiagent:aiagent --from=builder /home/aiagent/.gitconfig           /home/aiagent/.gitconfig
 COPY --chown=aiagent:aiagent --from=builder /home/aiagent/superclaude_install.log /home/aiagent/superclaude_install.log
@@ -244,7 +244,7 @@ EOF
 RUN set -eux; \
     pipx ensurepath; \
     if ! command -v uvx >/dev/null 2>&1; then \
-    pipx install --force uv; \
+    pipx install --force "uv==${UV_VERSION}"; \
     fi; \
     uvx --version; \
     echo "[final] uvx installed and working."
