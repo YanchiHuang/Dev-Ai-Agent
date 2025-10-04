@@ -104,6 +104,7 @@ RUN set -eux; \
     nvm install ${NODE_VERSION}; \
     nvm alias default ${NODE_VERSION}; \
     nvm use ${NODE_VERSION}; \
+    ln -sfn "$NVM_DIR/versions/node/$(nvm version default)" "$NVM_DIR/versions/node/current"; \
     npm install -g ${GLOBAL_NPM_PACKAGES}; \
     npm cache clean --force; \
     echo "[builder] Node $(node -v) 完成, npm global 安裝完成"
@@ -143,7 +144,7 @@ RUN set -eux; \
     '[ -s "\$NVM_DIR/nvm.sh" ] &&  . "\$NVM_DIR/nvm.sh"' \
     '[ -s "\$NVM_DIR/bash_completion" ] &&  . "\$NVM_DIR/bash_completion"' \
     "nvm use ${NODE_VERSION} > /dev/null 2>&1" \
-    "export PATH=\"\$NVM_DIR/versions/node/v${NODE_VERSION}/bin:\$HOME/.local/bin:\$HOME/bin:\$PATH\"" \
+    "export PATH=\"\$NVM_DIR/versions/node/current/bin:\$HOME/.local/bin:\$HOME/bin:\$PATH\"" \
     > ~/.bashrc; \
     cp ~/.bashrc ~/.profile
 
@@ -218,19 +219,20 @@ RUN mkdir -p workspace projects .ssh .gemini config
 WORKDIR /home/aiagent/workspace
 
 # PATH：提供非互動 shell 也能直接叫到 node/npm/npx/uv 等
-ENV PATH="/home/aiagent/.nvm/versions/node/v${NODE_VERSION}/bin:/home/aiagent/.local/bin:/home/aiagent/bin:${PATH}"
+ENV PATH="/home/aiagent/.nvm/versions/node/current/bin:/home/aiagent/.local/bin:/home/aiagent/bin:${PATH}"
 
 SHELL ["/bin/bash","-o","pipefail","-c"]
 # 一次性寫入 ~/.profile（取代原先的「grep 然後再 printf 覆蓋」的重複流程）
 RUN set -eux; \
-    if [ -d "$NVM_DIR/versions/node/v${NODE_VERSION}/bin" ]; then \
-    ln -sf $NVM_DIR/versions/node/v${NODE_VERSION}/bin/node /usr/local/bin/node || true; \
-    ln -sf $NVM_DIR/versions/node/v${NODE_VERSION}/bin/npm  /usr/local/bin/npm  || true; \
-    ln -sf $NVM_DIR/versions/node/v${NODE_VERSION}/bin/npx  /usr/local/bin/npx  || true; \
+    NVM_BIN_DIR="$NVM_DIR/versions/node/current/bin"; \
+    if [ -d "$NVM_BIN_DIR" ]; then \
+    ln -sf "$NVM_BIN_DIR/node" /usr/local/bin/node || true; \
+    ln -sf "$NVM_BIN_DIR/npm"  /usr/local/bin/npm  || true; \
+    ln -sf "$NVM_BIN_DIR/npx"  /usr/local/bin/npx  || true; \
     fi; \
     cat > /home/aiagent/.profile <<EOF
 export NVM_DIR="\$HOME/.nvm"
-export PATH="\$HOME/.local/bin:\$HOME/bin:\$NVM_DIR/versions/node/v${NODE_VERSION}/bin:\$PATH"
+export PATH="\$HOME/.local/bin:\$HOME/bin:\$NVM_DIR/versions/node/current/bin:\$PATH"
 [ -s "\$NVM_DIR/nvm.sh" ] && . "\$NVM_DIR/nvm.sh"
 # 非互動 shell 也能使用預設 NODE_VERSION；若未安裝則嘗試安裝（開發友善）
 nvm use ${NODE_VERSION} > /dev/null 2>&1 || nvm install ${NODE_VERSION}
