@@ -91,8 +91,8 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 | `OPENAI_API_KEY` / `GEMINI_API_KEY` / `ANTHROPIC_API_KEY` | `""`             | 各 CLI 所需的 API 金鑰。                                              |
 | `CLAUDE_CODE_MODEL` / `OPENAI_MODEL` / `GEMINI_MODEL`     | `""`             | (可選) 指定各 AI 工具使用的模型。                                     |
 | `TZ`                                                      | `UTC`            | 設定容器的時區，例如 `Asia/Taipei`。                                  |
-| `CHECK_CLI_UPDATES`                                       | `1`              | 啟動時是否檢查全域 CLI 更新 (1=啟用, 0=停用)。                      |
-| `CLI_AUTO_UPDATE`                                         | `0`              | 是否在啟動時自動更新過期的 CLI (1=啟用, 0=停用)。                    |
+| `CHECK_CLI_UPDATES`                                       | `1`              | 啟動時是否檢查全域 CLI 更新 (1=啟用, 0=停用)。                        |
+| `CLI_AUTO_UPDATE`                                         | `0`              | 是否在啟動時自動更新過期的 CLI (1=啟用, 0=停用)。                     |
 | `CHECK_CLI_PACKAGES`                                      | _(空白分隔字串)_ | 自訂要檢查的套件清單。                                                |
 | `GH_TOKEN`                                                | `""`             | GitHub Copilot CLI 使用的 PAT，適合在無瀏覽器環境登入。               |
 | `COPILOT_MODEL`                                           | `""`             | 指定 Copilot CLI 預設模型（視 CLI 版本支援情況）。                    |
