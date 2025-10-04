@@ -198,14 +198,14 @@ fi
 
 ### 常用指令
 
-| 指令                                 | 功能                                                     |
-| ------------------------------------ | -------------------------------------------------------- |
-| `ai_cli_status`                      | 顯示 AI CLI 安裝狀態與版本                               |
-| `aliases_list [regex]`               | 列出全部或符合過濾的 alias                               |
-| `aliases_find <keyword>`             | 搜尋 alias（有 `fzf` 進入互動模式）                      |
-| `aliases_sources`                    | 顯示實際載入的檔案清單                                   |
-| `aliases_doc [-m] [-o file]`         | 導出目前 alias 文件（純文字或 Markdown）                 |
-| `ccgod` / `cxgod` / `ctgod` / `ggod` | 危險操作，執行前會要求二次確認                           |
+| 指令                                 | 功能                                     |
+| ------------------------------------ | ---------------------------------------- |
+| `ai_cli_status`                      | 顯示 AI CLI 安裝狀態與版本               |
+| `aliases_list [regex]`               | 列出全部或符合過濾的 alias               |
+| `aliases_find <keyword>`             | 搜尋 alias（有 `fzf` 進入互動模式）      |
+| `aliases_sources`                    | 顯示實際載入的檔案清單                   |
+| `aliases_doc [-m] [-o file]`         | 導出目前 alias 文件（純文字或 Markdown） |
+| `ccgod` / `cxgod` / `ctgod` / `ggod` | 危險操作，執行前會要求二次確認           |
 
 `aliases_doc` 範例：
 
@@ -229,42 +229,3 @@ bash config/scripts/uninstall-aliases.sh
 2. 停用某一組 alias：把檔案改名為 `*.disabled` 或移出 `aliases/`。
 3. 新增新功能：在 `functions/` 下放置 `xxx.sh`，自動被載入。
 4. 想加速大量 alias：可用 `alias gen_<name>() { ... }` 搭配腳本產生。
-
-### Makefile 自動化 (選項 E 設計說明)
-
-建議新增下列目標（已於本次需求中規劃，可在根目錄新增 `Makefile`）：
-
-```Makefile
-ALIASES_SETUP_SCRIPT=config/scripts/setup-aliases.sh
-ALIASES_UNINSTALL_SCRIPT=config/scripts/uninstall-aliases.sh
-
-.PHONY: aliases-install aliases-uninstall aliases-reinstall aliases-status
-
-aliases-install:
-   bash $(ALIASES_SETUP_SCRIPT)
-
-aliases-uninstall:
-   bash $(ALIASES_UNINSTALL_SCRIPT)
-
-aliases-reinstall: aliases-uninstall aliases-install
-
-aliases-status:
-   @bash -lc 'source $$HOME/.bashrc >/dev/null 2>&1 || true; ai_cli_status || echo "alias framework not loaded"'
-```
-
-使用方式：
-
-```bash
-make aliases-install
-make aliases-status
-make aliases-reinstall
-make aliases-uninstall
-```
-
-設計重點：
-
-- 使用 PHONY 確保每次執行不受檔案時間戳影響。
-- `aliases-status` 在非互動 shell 中手動 source `.bashrc` 以取得函式。
-- 支援 CI：可於管線加入 `make aliases-install && make aliases-status` 檢查。
-
-> 若要納入 CI，可再加 `shellcheck` 驗證：`shellcheck config/bash/**/*.sh`。
