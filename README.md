@@ -147,3 +147,114 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 - SuperClaude 安裝日誌位於 `~/superclaude_install.log`，失敗時可在該檔案查詢原因。
 
 歡迎將 Dev-Ai-Agent 作為 AI 助手或自動化開發環境的基礎，依需求擴充更多 CLI、腳本與服務！
+
+## 模組化 Alias 框架
+
+本專案提供一個可選的「模組化 alias & 函式載入系統」，避免在 `~/.bashrc` 中堆疊大量重複腳本。特色：
+
+- 分類管理：AI CLI (`ai-claude.sh`, `ai-codex.sh`, `ai-gemini.sh`, `ai-copilot.sh`)、`git`、`docker`、`system`、`custom`。
+- 安全包裹：具破壞性或繞過安全檢查的指令改為函式，執行前互動確認（`ccgod`, `cxgod`, `ctgod`, `ggod`）。
+- 輕量安裝 / 可卸載：`setup-aliases.sh` / `uninstall-aliases.sh`。
+- 工具狀態：`ai_cli_status` 顯示可用 CLI 與版本資訊。
+- 檔案追蹤：`aliases_sources` 可看哪些檔案被載入。
+- 搜尋支援：`aliases_find <pattern>` 模糊搜尋（若安裝 `fzf` 會啟動互動選單）。
+
+### 安裝
+
+```bash
+bash config/scripts/setup-aliases.sh
+source ~/.bashrc
+```
+
+執行後 `~/.bashrc` 會新增一段標記區塊：
+
+```bash
+# >>> managed-alias-framework >>>
+# Load modular alias framework
+if [ -f "$HOME/.config/bash/init.sh" ]; then
+   . "$HOME/.config/bash/init.sh"
+fi
+# <<< managed-alias-framework <<<
+```
+
+### 目錄結構（安裝後於使用者家目錄）
+
+```text
+~/.config/bash/
+├── init.sh
+├── aliases/
+│   ├── ai-claude.sh
+│   ├── ai-codex.sh
+│   ├── ai-copilot.sh
+│   ├── ai-gemini.sh
+│   ├── git.sh
+│   ├── docker.sh
+│   ├── system.sh
+│   └── custom.sh
+└── functions/
+      ├── alias-framework.sh
+      └── ai-codex-functions.sh
+```
+
+### 常用指令
+
+| 指令 | 功能 |
+| ---- | ---- |
+| `ai_cli_status` | 顯示 AI CLI 安裝狀態與版本 |
+| `aliases_list [regex]` | 列出全部或符合過濾的 alias |
+| `aliases_find <keyword>` | 搜尋 alias（有 `fzf` 進入互動模式） |
+| `aliases_sources` | 顯示實際載入的檔案清單 |
+| `ccgod` / `cxgod` / `ctgod` / `ggod` | 危險操作，執行前會要求二次確認 |
+
+### 卸載
+
+```bash
+bash config/scripts/uninstall-aliases.sh
+```
+
+### 客製化建議
+
+1. 自訂 alias 放在 `custom.sh`。
+2. 停用某一組 alias：把檔案改名為 `*.disabled` 或移出 `aliases/`。
+3. 新增新功能：在 `functions/` 下放置 `xxx.sh`，自動被載入。
+4. 想加速大量 alias：可用 `alias gen_<name>() { ... }` 搭配腳本產生。
+
+### Makefile 自動化 (選項 E 設計說明)
+
+建議新增下列目標（已於本次需求中規劃，可在根目錄新增 `Makefile`）：
+
+```Makefile
+ALIASES_SETUP_SCRIPT=config/scripts/setup-aliases.sh
+ALIASES_UNINSTALL_SCRIPT=config/scripts/uninstall-aliases.sh
+
+.PHONY: aliases-install aliases-uninstall aliases-reinstall aliases-status
+
+aliases-install:
+   bash $(ALIASES_SETUP_SCRIPT)
+
+aliases-uninstall:
+   bash $(ALIASES_UNINSTALL_SCRIPT)
+
+aliases-reinstall: aliases-uninstall aliases-install
+
+aliases-status:
+   @bash -lc 'source $$HOME/.bashrc >/dev/null 2>&1 || true; ai_cli_status || echo "alias framework not loaded"'
+```
+
+使用方式：
+
+```bash
+make aliases-install
+make aliases-status
+make aliases-reinstall
+make aliases-uninstall
+```
+
+設計重點：
+
+- 使用 PHONY 確保每次執行不受檔案時間戳影響。
+- `aliases-status` 在非互動 shell 中手動 source `.bashrc` 以取得函式。
+- 支援 CI：可於管線加入 `make aliases-install && make aliases-status` 檢查。
+
+> 若要納入 CI，可再加 `shellcheck` 驗證：`shellcheck config/bash/**/*.sh`。
+

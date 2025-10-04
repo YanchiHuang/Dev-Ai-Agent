@@ -47,11 +47,31 @@ ai_cli_status() {
   echo '=== AI CLI availability ==='
   for c in claude codex copilot gemini; do
     if command -v "$c" >/dev/null 2>&1; then
-      printf '  %-8s OK\n' "$c"
+      # Try common version flags
+      local ver
+      for flag in --version -V version; do
+        ver=$("$c" $flag 2>/dev/null | head -n1) && [ -n "$ver" ] && break || true
+      done
+      [ -z "$ver" ] && ver="(version unavailable)"
+      printf '  %-8s OK  %s\n' "$c" "$ver"
     else
       printf '  %-8s MISSING\n' "$c"
     fi
   done
 }
 
-export -f require_cmd _alias_confirm _run_danger aliases_sources aliases_list ai_cli_status
+# Search aliases by substring or regex; prefer fzf if installed
+aliases_find() {
+  if [ $# -eq 0 ]; then
+    echo "Usage: aliases_find <pattern>" >&2
+    return 1
+  fi
+  local pat="$1"
+  if command -v fzf >/dev/null 2>&1; then
+    alias | grep -i "$pat" | fzf --preview 'echo {}'
+  else
+    alias | grep -i "$pat"
+  fi
+}
+
+export -f require_cmd _alias_confirm _run_danger aliases_sources aliases_list ai_cli_status aliases_find
