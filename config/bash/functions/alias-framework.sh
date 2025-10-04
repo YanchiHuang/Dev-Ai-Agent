@@ -74,4 +74,46 @@ aliases_find() {
   fi
 }
 
-export -f require_cmd _alias_confirm _run_danger aliases_sources aliases_list ai_cli_status aliases_find
+# Generate documentation for all aliases
+# Usage: aliases_doc [-m|--markdown] [-o file]
+# Default output: plain text to stdout.
+aliases_doc() {
+  local mode="plain" out="";
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      -m|--markdown) mode="md";;
+      -o) shift; out="$1";;
+      --) shift; break;;
+      *) echo "Unknown option: $1" >&2; return 1;;
+    esac; shift || true
+  done
+
+  local tmp
+  tmp=$(mktemp 2>/dev/null || echo "/tmp/aliases_doc.$$")
+  {
+    if [ "$mode" = md ]; then
+      echo "# Alias Documentation"; echo
+      echo "_Generated: $(date '+%Y-%m-%d %H:%M:%S')_"; echo
+      echo "## Loaded Files"; echo '```'; aliases_sources 2>/dev/null || true; echo '```'; echo
+      echo "## Aliases"; echo '```'
+      alias | sed 's/^alias //'
+      echo '```'
+    else
+      echo "Alias Documentation ($(date '+%Y-%m-%d %H:%M:%S'))"
+      echo "Loaded files:"; aliases_sources 2>/dev/null || true; echo
+      alias | sed 's/^alias //'
+    fi
+  } > "$tmp"
+
+  if [ -n "$out" ]; then
+    mv "$tmp" "$out"
+    echo "Written: $out"
+  else
+    cat "$tmp"
+    rm -f "$tmp"
+  fi
+}
+
+export -f aliases_doc
+
+export -f require_cmd _alias_confirm _run_danger aliases_sources aliases_list ai_cli_status aliases_find aliases_doc

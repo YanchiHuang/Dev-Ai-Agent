@@ -107,14 +107,14 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 
 ## AI 工具速覽
 
-| 工具               | 指令                                     | 補充 |
-| ------------------ | ---------------------------------------- | ----- |
-| Claude Code        | `claude`, `claude chat`, `claude edit`   | 手動執行 `~/.claude/setup-claude.sh` 後會加入 `cc`, `cchelp`, `cskip`, `ccgod` 等 alias；`cskip`/`ccgod` 會跳過安全檢查，僅在可完全信任的倉庫使用。 |
-| Gemini CLI         | `gemini`, `gemini chat`                  | 手動執行 `~/.gemini/setup-gemini.sh` 後會建立 `gchat`, `ggod` 等別名；`ggod` 會以 `--yolo` 模式繞過確認，請特別留意執行風險。 |
+| 工具               | 指令                                     | 補充                                                                                                                                                          |
+| ------------------ | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Claude Code        | `claude`, `claude chat`, `claude edit`   | 手動執行 `~/.claude/setup-claude.sh` 後會加入 `cc`, `cchelp`, `cskip`, `ccgod` 等 alias；`cskip`/`ccgod` 會跳過安全檢查，僅在可完全信任的倉庫使用。           |
+| Gemini CLI         | `gemini`, `gemini chat`                  | 手動執行 `~/.gemini/setup-gemini.sh` 後會建立 `gchat`, `ggod` 等別名；`ggod` 會以 `--yolo` 模式繞過確認，請特別留意執行風險。                                 |
 | Codex CLI          | `codex`, `codex --profile <name>`        | `config.toml` 已定義 OpenAI、Ollama、vLLM 等 profiles；執行 `~/.codex/setup-codex.sh` 會加入 `cx`, `cxgod` 等 alias，其中 `cxgod` 會略過 sandbox 與審核程序。 |
-| Grok CLI           | `grok`                                   | 由 Dockerfile 全域安裝，可直接對話。 |
-| GitHub Copilot CLI | `copilot chat`, `copilot suggest`        | 建議預先設定 `GH_TOKEN` 以利無頭環境登入。 |
-| Spec Workflow      | `claude-code-spec-workflow`, `spec-dash` | 透過 `setup-spec-workflow.sh` 追加 `spec-get-steering` 等 alias，搭配 `npx ... claude-spec-dashboard`。 |
+| Grok CLI           | `grok`                                   | 由 Dockerfile 全域安裝，可直接對話。                                                                                                                          |
+| GitHub Copilot CLI | `copilot chat`, `copilot suggest`        | 建議預先設定 `GH_TOKEN` 以利無頭環境登入。                                                                                                                    |
+| Spec Workflow      | `claude-code-spec-workflow`, `spec-dash` | 透過 `setup-spec-workflow.sh` 追加 `spec-get-steering` 等 alias，搭配 `npx ... claude-spec-dashboard`。                                                       |
 
 ## Git 與資料持久化
 
@@ -198,13 +198,24 @@ fi
 
 ### 常用指令
 
-| 指令 | 功能 |
-| ---- | ---- |
-| `ai_cli_status` | 顯示 AI CLI 安裝狀態與版本 |
-| `aliases_list [regex]` | 列出全部或符合過濾的 alias |
-| `aliases_find <keyword>` | 搜尋 alias（有 `fzf` 進入互動模式） |
-| `aliases_sources` | 顯示實際載入的檔案清單 |
-| `ccgod` / `cxgod` / `ctgod` / `ggod` | 危險操作，執行前會要求二次確認 |
+| 指令                                 | 功能                                                     |
+| ------------------------------------ | -------------------------------------------------------- |
+| `ai_cli_status`                      | 顯示 AI CLI 安裝狀態與版本                               |
+| `aliases_list [regex]`               | 列出全部或符合過濾的 alias                               |
+| `aliases_find <keyword>`             | 搜尋 alias（有 `fzf` 進入互動模式）                      |
+| `aliases_sources`                    | 顯示實際載入的檔案清單                                   |
+| `aliases_doc [-m] [-o file]`         | 導出目前 alias 文件（純文字或 Markdown）                 |
+| `ccgod` / `cxgod` / `ctgod` / `ggod` | 危險操作，執行前會要求二次確認                           |
+
+`aliases_doc` 範例：
+
+```bash
+# 螢幕輸出純文字
+aliases_doc
+
+# 輸出 Markdown 到檔案
+aliases_doc -m -o ~/ALIAS_DOC.md
+```
 
 ### 卸載
 
@@ -257,4 +268,3 @@ make aliases-uninstall
 - 支援 CI：可於管線加入 `make aliases-install && make aliases-status` 檢查。
 
 > 若要納入 CI，可再加 `shellcheck` 驗證：`shellcheck config/bash/**/*.sh`。
-
