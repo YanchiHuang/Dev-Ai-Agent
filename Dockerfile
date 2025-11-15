@@ -201,15 +201,13 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     ripgrep \
     fzf \
     jq \
+    yq \
     unzip; \
     rm -rf /var/lib/apt/lists/*
 
 # 安裝 yq 和 ast-grep
 # hadolint ignore=DL3008,DL4006
 RUN set -eux; \
-    # 安裝 yq
-    curl -fsSL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq; \
-    chmod +x /usr/local/bin/yq; \
     # 安裝 ast-grep
     curl -fsSL https://github.com/ast-grep/ast-grep/releases/latest/download/ast-grep-x86_64-linux.zip -o /tmp/ast-grep.zip; \
     unzip /tmp/ast-grep.zip -d /tmp/ast-grep; \
@@ -217,7 +215,6 @@ RUN set -eux; \
     chmod +x /usr/local/bin/sg; \
     rm -rf /tmp/ast-grep.zip /tmp/ast-grep; \
     # 驗證安裝
-    yq --version; \
     sg --version
 
 # 建立與 builder 一致的非 root 使用者
