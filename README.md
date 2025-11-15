@@ -148,6 +148,14 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 
 - **Git 設定**: 預設的 Git 設定 (`user.name`, `user.email`) 可在容器內隨時透過 `git config --global` 指令覆寫。
 
+## Shell Tools Usage
+
+- `fd`: 比 find 更快速友善的檔案搜尋
+- `rg` (ripgrep): 超高效的全文搜尋工具
+- `fzf`: 互動式模糊搜尋，提升指令選擇體驗
+- `jq`/`yq`: JSON/YAML 資料處理利器
+- `sg` (ast-grep): 基於抽象語法樹的代碼搜尋與重構工具
+
 ## 疑難排解與延伸閱讀
 
 - 常見操作（重新建置、進入容器、檢查日誌、權限處理、API 金鑰問題、網路檢查）請參考 [USAGE.md](USAGE.md)。
