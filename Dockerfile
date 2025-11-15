@@ -5,7 +5,6 @@
 
 ARG BASE_IMAGE=debian:bookworm-slim
 ARG NODE_VERSION=22
-ARG SUPERCLAUDE_INSTALLER=pipx
 ARG NVM_VERSION=v0.40.1
 ARG SPEC_KIT_REPO=git+https://github.com/github/spec-kit.git
 ARG GLOBAL_NPM_PACKAGES="@openai/codex@latest @google/gemini-cli@latest @anthropic-ai/claude-code@latest @vibe-kit/grok-cli@latest @pimzino/claude-code-spec-workflow@latest ccusage@latest @github/copilot@latest @ast-grep/cli"
@@ -17,7 +16,6 @@ ARG GLOBAL_NPM_PACKAGES="@openai/codex@latest @google/gemini-cli@latest @anthrop
 ######################################################################
 FROM ${BASE_IMAGE} AS base-apt
 ARG NODE_VERSION
-ARG SUPERCLAUDE_INSTALLER
 ARG NVM_VERSION
 ARG SPEC_KIT_REPO
 ARG GLOBAL_NPM_PACKAGES
@@ -57,14 +55,12 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 ######################################################################
 FROM base-apt AS builder
 ARG NODE_VERSION
-ARG SUPERCLAUDE_INSTALLER
 ARG NVM_VERSION
 ARG SPEC_KIT_REPO
 ARG GLOBAL_NPM_PACKAGES
 
 ENV NVM_DIR=/home/aiagent/.nvm \
     NODE_VERSION=${NODE_VERSION} \
-    SUPERCLAUDE_INSTALLER=${SUPERCLAUDE_INSTALLER} \
     SPEC_KIT_REPO=${SPEC_KIT_REPO}
 
 # 僅 builder 需要的建置工具；同層清理
@@ -148,14 +144,6 @@ RUN set -eux; \
     > ~/.bashrc; \
     cp ~/.bashrc ~/.profile
 
-# SuperClaude 安裝（外部腳本；保持快取與教學導向日誌）
-COPY --chown=aiagent:aiagent --chmod=755 config/scripts/setup-SuperClaude.sh /home/aiagent/setup-SuperClaude.sh
-RUN set -euxo pipefail; \
-    echo "[SuperClaude] Python: $(python3 --version)"; \
-    echo "[SuperClaude] Node: $(node --version)"; \
-    /home/aiagent/setup-SuperClaude.sh \
-    || (echo 'SuperClaude 安裝失敗 (builder 階段)'; cat /home/aiagent/superclaude_install.log || true; exit 1)
-
 ######################################################################
 # Stage 3: final
 # - 僅安裝執行期需要的工具（gh），複製 builder 成果
@@ -163,7 +151,6 @@ RUN set -euxo pipefail; \
 ######################################################################
 FROM base-apt AS final
 ARG NODE_VERSION
-ARG SUPERCLAUDE_INSTALLER
 ARG NVM_VERSION
 ARG SPEC_KIT_REPO
 ARG GLOBAL_NPM_PACKAGES
@@ -176,7 +163,6 @@ LABEL org.opencontainers.image.licenses="AGPL-3.0"
 ENV DEBIAN_FRONTEND=noninteractive \
     NVM_DIR=/home/aiagent/.nvm \
     NODE_VERSION=${NODE_VERSION} \
-    SUPERCLAUDE_INSTALLER=${SUPERCLAUDE_INSTALLER} \
     CHECK_CLI_UPDATES=1 \
     CHECK_CLI_PACKAGES="@openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli @github/copilot"
 
@@ -221,8 +207,6 @@ COPY --chown=aiagent:aiagent --from=builder /home/aiagent/.local/bin           /
 COPY --chown=aiagent:aiagent --from=builder /home/aiagent/.local/pipx          /home/aiagent/.local/pipx
 COPY --chown=aiagent:aiagent --from=builder /home/aiagent/.bashrc              /home/aiagent/.bashrc
 COPY --chown=aiagent:aiagent --from=builder /home/aiagent/.gitconfig           /home/aiagent/.gitconfig
-COPY --chown=aiagent:aiagent --from=builder /home/aiagent/superclaude_install.log /home/aiagent/superclaude_install.log
-COPY --chown=aiagent:aiagent --from=builder /home/aiagent/setup-SuperClaude.sh /home/aiagent/setup-SuperClaude.sh
 
 # 複製 runtime scripts（entrypoint + update checker）
 COPY --chown=aiagent:aiagent --chmod=755 config/scripts/check-cli-updates.sh /home/aiagent/bin/check-cli-updates.sh

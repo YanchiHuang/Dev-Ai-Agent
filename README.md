@@ -6,28 +6,28 @@
 
 ## 專案概要
 
-Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `aiagent` 使用者環境，預載 Node.js 22、Python、GitHub CLI 與多個 AI/開發工具。透過 `docker-compose` 便能在任何機器快速取得一致的工作站，同時提供自動檢查 CLI 更新、SuperClaude 工作流、Spec-Kit、MCP 伺服器等整合能力。
+Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `aiagent` 使用者環境，預載 Node.js 22、Python、GitHub CLI 與多個 AI/開發工具。透過 `docker-compose` 便能在任何機器快速取得一致的工作站，同時提供自動檢查 CLI 更新、Spec-Kit、MCP 伺服器等整合能力。
 
 ### Codebase Summary
 
-| 模組                                  | 內容                                                                                                        | 重點                                                                                                     |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `Dockerfile`                          | 三階段建置流程（`base-apt` → `builder` → `final`）安裝系統套件、NVM/Node、全域 npm CLI、`uv`、SuperClaude。 | 使用 cache mount 加速建構、建立 `aiagent` 使用者、在 runtime 階段載入 `entrypoint` 與 CLI 更新檢查腳本。 |
-| `docker-compose.yml`                  | 啟動 `aiagent` 服務並掛載設定、workspace、SSH 金鑰。                                                        | 支援環境變數覆寫 Node 版本、CLI 更新策略與 API 金鑰。                                                    |
-| `config/scripts/entrypoint.sh`        | 容器啟動時載入 NVM、執行 CLI 更新檢查後進入工作殼層。                                                       | 確保錯誤不會中斷啟動。                                                                                   |
-| `config/scripts/check-cli-updates.sh` | 利用 `npm outdated -g --json` 檢查全域 CLI 版本，並可選擇自動更新。                                         | 支援環境變數 `CHECK_CLI_UPDATES`、`CLI_AUTO_UPDATE`、`CHECK_CLI_PACKAGES`。                              |
-| `config/claude`                       | 提供 Claude Code 設定、預設指令、SuperClaude 安裝與 Spec Workflow alias 腳本。                              | `setup-SuperClaude.sh` 支援 pipx/uv/pip/npm 等安裝管道並產生日誌。                                       |
-| `config/codex`                        | Codex CLI 的 `config.toml` 與初始化腳本。                                                                   | 預先配置多個 provider/profile（OpenAI、Ollama、vLLM 等）。                                               |
-| `config/gemini`                       | Gemini CLI 設定檔與系統提示。                                                                               | 預載 MCP GitHub server 設定與繁體中文回應指示。                                                          |
-| `.env.example`                        | 範例環境變數。                                                                                              | 說明 Node 版本、API 金鑰與 CLI 更新開關。                                                                |
-| `USAGE.md`                            | 詳細操作手冊。                                                                                              | 包含建置、登入、工具使用、疑難排解、進階設定。                                                           |
+| 模組                                  | 內容                                                                                           | 重點                                                                                                     |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `Dockerfile`                          | 三階段建置流程（`base-apt` → `builder` → `final`）安裝系統套件、NVM/Node、全域 npm CLI、`uv`。 | 使用 cache mount 加速建構、建立 `aiagent` 使用者、在 runtime 階段載入 `entrypoint` 與 CLI 更新檢查腳本。 |
+| `docker-compose.yml`                  | 啟動 `aiagent` 服務並掛載設定、workspace、SSH 金鑰。                                           | 支援環境變數覆寫 Node 版本、CLI 更新策略與 API 金鑰。                                                    |
+| `config/scripts/entrypoint.sh`        | 容器啟動時載入 NVM、執行 CLI 更新檢查後進入工作殼層。                                          | 確保錯誤不會中斷啟動。                                                                                   |
+| `config/scripts/check-cli-updates.sh` | 利用 `npm outdated -g --json` 檢查全域 CLI 版本，並可選擇自動更新。                            | 支援環境變數 `CHECK_CLI_UPDATES`、`CLI_AUTO_UPDATE`、`CHECK_CLI_PACKAGES`。                              |
+| `config/claude`                       | 提供 Claude Code 設定、預設指令與 Spec Workflow alias 腳本。                                   | 支援 Spec Workflow 別名與自動化流程。                                                                    |
+| `config/codex`                        | Codex CLI 的 `config.toml` 與初始化腳本。                                                      | 預先配置多個 provider/profile（OpenAI、Ollama、vLLM 等）。                                               |
+| `config/gemini`                       | Gemini CLI 設定檔與系統提示。                                                                  | 預載 MCP GitHub server 設定與繁體中文回應指示。                                                          |
+| `.env.example`                        | 範例環境變數。                                                                                 | 說明 Node 版本、API 金鑰與 CLI 更新開關。                                                                |
+| `USAGE.md`                            | 詳細操作手冊。                                                                                 | 包含建置、登入、工具使用、疑難排解、進階設定。                                                           |
 
 > 上表涵蓋倉庫內所有主要檔案，更多細節可於對應路徑查看原始碼與腳本註解。
 
 ## 核心特色
 
 - **多重 AI CLI**：`@anthropic-ai/claude-code`、`@openai/codex`、`@google/gemini-cli`、`@vibe-kit/grok-cli`、`@github/copilot` 皆已全域安裝，另含 `@pimzino/claude-code-spec-workflow`、`ccusage`。
-- **自動化工作流**：內建 SuperClaude Framework 安裝腳本與 Spec Workflow 別名，快速啟用規格驅動開發。
+- **自動化工作流**：內建 Spec Workflow 別名，快速啟用規格驅動開發。
 - **安全與一致性**：使用非 root 使用者、固定 UID/GID=1000，預掛載 `config/`、`workspace/`、`projects` 以保存設定與成果。
 - **啟動檢查機制**：容器啟動時自動檢查全域 CLI 是否過期，可選擇自動更新或僅提示更新指令。
 - **可擴充設計**：支援自訂 Node 版本、環境變數與 MCP server；利用 `config/` 目錄調整各 CLI 的 instructions/config。
@@ -42,7 +42,7 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 ├── USAGE.md                  # 詳細使用指南
 ├── config/
 │   ├── scripts/              # 入口腳本與 CLI 更新檢查
-│   ├── claude/               # Claude Code、SuperClaude、Spec Workflow 設定
+│   ├── claude/               # Claude Code、Spec Workflow 設定
 │   ├── gemini/               # Gemini CLI 設定與系統提示
 │   ├── codex/                # Codex CLI profiles 與初始化腳本
 │   ├── gitconfig             # 預設 Git 設定
@@ -177,8 +177,6 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
     npm i -g @openai/codex@latest @google/gemini-cli@latest \
       @anthropic-ai/claude-code@latest @vibe-kit/grok-cli@latest @github/copilot@latest
     ```
-
-- SuperClaude 安裝日誌位於 `~/superclaude_install.log`，失敗時可在該檔案查詢原因。
 
 歡迎將 Dev-Ai-Agent 作為 AI 助手或自動化開發環境的基礎，依需求擴充更多 CLI、腳本與服務！
 
