@@ -180,8 +180,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     CHECK_CLI_UPDATES=1 \
     CHECK_CLI_PACKAGES="@openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli @github/copilot"
 
-# 執行期需用到的 GitHub CLI（保持最小依賴）
-# hadolint ignore=DL3008  # 最小化依賴，沿用官方 gh 套件庫版本
+# 執行期需用到的 GitHub CLI 與開發工具(保持最小依賴)
+# hadolint ignore=DL3008  # 最小化依賴,沿用官方 gh 套件庫版本
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     set -eux; \
@@ -191,8 +191,34 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
     > /etc/apt/sources.list.d/github-cli.list; \
     apt-get update; \
-    apt-get install -y --no-install-recommends gh python3 python3-pip pipx; \
+    apt-get install -y --no-install-recommends \
+    cron \
+    gh \
+    python3 \
+    python3-pip \
+    pipx \
+    fd-find \
+    ripgrep \
+    fzf \
+    jq \
+    unzip; \
     rm -rf /var/lib/apt/lists/*
+
+# 安裝 yq 和 ast-grep
+# hadolint ignore=DL3008,DL4006
+RUN set -eux; \
+    # 安裝 yq
+    curl -fsSL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq; \
+    chmod +x /usr/local/bin/yq; \
+    # 安裝 ast-grep
+    curl -fsSL https://github.com/ast-grep/ast-grep/releases/latest/download/ast-grep-x86_64-linux.zip -o /tmp/ast-grep.zip; \
+    unzip /tmp/ast-grep.zip -d /tmp/ast-grep; \
+    mv /tmp/ast-grep/sg /usr/local/bin/sg; \
+    chmod +x /usr/local/bin/sg; \
+    rm -rf /tmp/ast-grep.zip /tmp/ast-grep; \
+    # 驗證安裝
+    yq --version; \
+    sg --version
 
 # 建立與 builder 一致的非 root 使用者
 RUN groupadd -g 1000 aiagent || true \
