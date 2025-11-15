@@ -1,4 +1,7 @@
 {
+  "enabledPlugins": {
+  },
+  "alwaysThinkingEnabled": true,
   "default_model": "claude-3-sonnet-20241022",
   "instructions_file": "~/.claude/default_instructions.md",
   "editor": "code",
