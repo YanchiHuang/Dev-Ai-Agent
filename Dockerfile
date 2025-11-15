@@ -8,7 +8,7 @@ ARG NODE_VERSION=22
 ARG SUPERCLAUDE_INSTALLER=pipx
 ARG NVM_VERSION=v0.40.1
 ARG SPEC_KIT_REPO=git+https://github.com/github/spec-kit.git
-ARG GLOBAL_NPM_PACKAGES="@openai/codex@latest @google/gemini-cli@latest @anthropic-ai/claude-code@latest @vibe-kit/grok-cli@latest @pimzino/claude-code-spec-workflow@latest ccusage@latest @github/copilot@latest"
+ARG GLOBAL_NPM_PACKAGES="@openai/codex@latest @google/gemini-cli@latest @anthropic-ai/claude-code@latest @vibe-kit/grok-cli@latest @pimzino/claude-code-spec-workflow@latest ccusage@latest @github/copilot@latest @ast-grep/cli"
 
 ######################################################################
 # Stage 1: base-apt (system packages only; reproducible & cached)
@@ -205,18 +205,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     unzip; \
     rm -rf /var/lib/apt/lists/*
 
-# 安裝 yq 和 ast-grep
 # hadolint ignore=DL3008,DL4006
-RUN set -eux; \
-    # 安裝 ast-grep
-    curl -fsSL https://github.com/ast-grep/ast-grep/releases/latest/download/ast-grep-x86_64-linux.zip -o /tmp/ast-grep.zip; \
-    unzip /tmp/ast-grep.zip -d /tmp/ast-grep; \
-    mv /tmp/ast-grep/sg /usr/local/bin/sg; \
-    chmod +x /usr/local/bin/sg; \
-    rm -rf /tmp/ast-grep.zip /tmp/ast-grep; \
-    # 驗證安裝
-    sg --version
-
 # 建立與 builder 一致的非 root 使用者
 RUN groupadd -g 1000 aiagent || true \
     && useradd  -u 1000 -g 1000 -m -s /bin/bash aiagent \
