@@ -189,7 +189,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     jq \
     yq \
     unzip; \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/*; \
+    ln -s /usr/bin/fdfind /usr/local/bin/fd
 
 # hadolint ignore=DL3008,DL4006
 # 建立與 builder 一致的非 root 使用者
