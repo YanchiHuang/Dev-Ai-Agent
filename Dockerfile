@@ -182,6 +182,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     gh \
     python3 \
     python3-pip \
+    procps \
     pipx \
     fd-find \
     ripgrep \
