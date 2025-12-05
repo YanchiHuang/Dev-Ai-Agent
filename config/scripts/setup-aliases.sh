@@ -18,12 +18,19 @@ ensure_dirs() {
 }
 
 sync_files() {
-  rsync -a --delete "${REPO_ROOT_ALIAS_DIR}/" "${TARGET_ROOT}/" 2>/dev/null || cp -r "${REPO_ROOT_ALIAS_DIR}"/* "${TARGET_ROOT}/"
+  # Use rsync if available (faster), fallback to cp with minimal overhead
+  if command -v rsync >/dev/null 2>&1; then
+    rsync -a --delete "${REPO_ROOT_ALIAS_DIR}/" "${TARGET_ROOT}/" 2>/dev/null && return 0
+  fi
+
+  # Faster cp alternative: only update if source is newer
+  cp -ru "${REPO_ROOT_ALIAS_DIR}"/* "${TARGET_ROOT}/" 2>/dev/null || true
 }
 
 patch_bashrc() {
   touch "${BASHRC}"
   if ! grep -q "${MARK_BEGIN}" "${BASHRC}"; then
+    # Create backup with timestamp only if changes needed
     cp "${BASHRC}" "${BASHRC}.bak.$(date +%Y%m%d-%H%M%S)"
     {
       echo ""; echo "${MARK_BEGIN}";
@@ -38,7 +45,7 @@ BLOCK
     } >> "${BASHRC}"
     log "Appended sourcing block to .bashrc"
   else
-    log "Sourcing block already present in .bashrc"
+    log "Sourcing block already present in .bashrc (skipping patch)"
   fi
 }
 

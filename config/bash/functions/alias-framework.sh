@@ -43,21 +43,35 @@ aliases_list() {
 }
 
 # Show AI CLI status
+# Added 'nocache' flag to bypass caching if needed: ai_cli_status nocache
 ai_cli_status() {
-  echo '=== AI CLI availability ==='
-  for c in claude codex copilot gemini; do
-    if command -v "$c" >/dev/null 2>&1; then
-      # Try common version flags
-      local ver
-      for flag in --version -V version; do
-        ver=$("$c" $flag 2>/dev/null | head -n1) && [ -n "$ver" ] && break || true
-      done
-      [ -z "$ver" ] && ver="(version unavailable)"
-      printf '  %-8s OK  %s\n' "$c" "$ver"
-    else
-      printf '  %-8s MISSING\n' "$c"
-    fi
-  done
+  # Cache results in session variable for performance (lasts until shell is closed)
+  if [ "$1" != "nocache" ] && [ -n "${_AI_CLI_STATUS_CACHE:-}" ]; then
+    echo "${_AI_CLI_STATUS_CACHE}"
+    return 0
+  fi
+
+  local output
+  local tmp
+  tmp=$(mktemp 2>/dev/null || echo "/tmp/ai_cli_status.$$")
+  {
+    echo '=== AI CLI availability ==='
+    for c in claude codex copilot gemini; do
+      if command -v "$c" >/dev/null 2>&1; then
+        printf '  %-8s OK\n' "$c"
+      else
+        printf '  %-8s MISSING\n' "$c"
+      fi
+    done
+  } > "$tmp"
+  output=$(cat "$tmp")
+  rm -f "$tmp"
+
+  # Cache for this session
+  _AI_CLI_STATUS_CACHE="$output"
+  export _AI_CLI_STATUS_CACHE
+
+  echo "$output"
 }
 
 # Search aliases by substring or regex; prefer fzf if installed

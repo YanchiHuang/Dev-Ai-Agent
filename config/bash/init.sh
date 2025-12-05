@@ -30,13 +30,18 @@ fi
 export ALIAS_FRAMEWORK_FILES
 
 # Optional one-time per shell interactive notice (only if PS1 set and ai_cli_status defined)
-if [ -n "${PS1:-}" ] && command -v ai_cli_status >/dev/null 2>&1; then
-  # Show concise line; user can run 'ai_cli_status' for details
-  _missing="$(ai_cli_status | grep MISSING | awk '{print $1}')" || true
+# Lazy check: only verify if interactive and cache is missing
+if [ -n "${PS1:-}" ] && [ -z "${_ALIAS_FRAMEWORK_STATUS_CHECKED:-}" ]; then
+  _ALIAS_FRAMEWORK_STATUS_CHECKED=1
+  # Quick check without running version commands (too slow)
+  _missing=""
+  for c in claude codex copilot gemini; do
+    command -v "$c" >/dev/null 2>&1 || _missing="${_missing}${c} "
+  done
   if [ -n "${_missing}" ]; then
-    echo "[alias-framework] Missing AI CLI(s): ${_missing}. Run ai_cli_status for details." >&2
+    echo "[alias-framework] Missing AI CLI(s): ${_missing%% }. Run ai_cli_status for details." >&2
   fi
-  unset _missing
+  unset _missing c
 fi
 
 unset BASH_CONFIG_ROOT ALIASES_DIR FUNCTIONS_DIR f
