@@ -26,7 +26,7 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 
 ## 核心特色
 
-- **多重 AI CLI**：`@anthropic-ai/claude-code`、`@openai/codex`、`@google/gemini-cli`、`@vibe-kit/grok-cli`、`@github/copilot` 皆已全域安裝，另含 `@pimzino/claude-code-spec-workflow`、`ccusage`。
+- **多重 AI CLI**：`@anthropic-ai/claude-code`、`@openai/codex`、`@google/gemini-cli`、`@vibe-kit/grok-cli`、`opencode-ai`、`@github/copilot` 皆已全域安裝，另含 `@pimzino/claude-code-spec-workflow`、`ccusage`。
 - **自動化工作流**：內建 Spec Workflow 別名，快速啟用規格驅動開發。
 - **安全與一致性**：使用非 root 使用者、固定 UID/GID=1000，預掛載 `config/`、`workspace/`、`projects` 以保存設定與成果。
 - **啟動檢查機制**：容器啟動時自動檢查全域 CLI 是否過期，可選擇自動更新或僅提示更新指令。
@@ -133,6 +133,7 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 | Gemini CLI         | `gemini`, `gemini chat`                  | 手動執行 `~/.gemini/setup-gemini.sh` 後會建立 `gchat`, `ggod` 等別名；`ggod` 會以 `--yolo` 模式繞過確認，請特別留意執行風險。                                 |
 | Codex CLI          | `codex`, `codex --profile <name>`        | `config.toml` 已定義 OpenAI、Ollama、vLLM 等 profiles；執行 `~/.codex/setup-codex.sh` 會加入 `cx`, `cxgod` 等 alias，其中 `cxgod` 會略過 sandbox 與審核程序。 |
 | Grok CLI           | `grok`                                   | 由 Dockerfile 全域安裝，可直接對話。                                                                                                                          |
+| Opencode AI        | `opencode`                               | 開源 AI Coding Agent，引用自 [anomalyco/opencode](https://github.com/anomalyco/opencode)                                                                      |
 | GitHub Copilot CLI | `copilot chat`, `copilot suggest`        | 建議預先設定 `GH_TOKEN` 以利無頭環境登入。                                                                                                                    |
 | Spec Workflow      | `claude-code-spec-workflow`, `spec-dash` | 透過 `setup-spec-workflow.sh` 追加 `spec-get-steering` 等 alias，搭配 `npx ... claude-spec-dashboard`。                                                       |
 
@@ -175,7 +176,7 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 
     ```bash
     npm i -g @openai/codex@latest @google/gemini-cli@latest \
-      @anthropic-ai/claude-code@latest @vibe-kit/grok-cli@latest @github/copilot@latest
+      @anthropic-ai/claude-code@latest @vibe-kit/grok-cli@latest opencode-ai@latest @github/copilot@latest
     ```
 
 歡迎將 Dev-Ai-Agent 作為 AI 助手或自動化開發環境的基礎，依需求擴充更多 CLI、腳本與服務！

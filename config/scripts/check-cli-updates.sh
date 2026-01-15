@@ -4,7 +4,7 @@ set -euo pipefail
 # Check specific global npm CLIs for updates and print suggestions.
 
 # Defaults to the four requested packages unless overridden via env.
-PACKAGES_STR=${CHECK_CLI_PACKAGES:-"@openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli"}
+PACKAGES_STR=${CHECK_CLI_PACKAGES:-"@openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli opencode-ai"}
 
 # Allow opt-out at runtime via env.
 if [[ "${CHECK_CLI_UPDATES:-1}" != "1" ]]; then
