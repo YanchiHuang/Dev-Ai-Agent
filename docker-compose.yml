@@ -22,6 +22,7 @@ services:
       - ./config/gemini:/home/aiagent/.gemini
       - ./config/claude:/home/aiagent/.claude
       - ./config/codex:/home/aiagent/.codex
+      - ./config/opencode:/home/aiagent/.opencode
       - ~/.ssh:/home/aiagent/.ssh:ro
       - projects:/home/aiagent/projects
     working_dir: /home/aiagent/workspace
