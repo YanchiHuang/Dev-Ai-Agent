@@ -3,8 +3,9 @@ set -euo pipefail
 
 # Check specific global npm CLIs for updates and print suggestions.
 
-# Defaults to the four requested packages unless overridden via env.
-PACKAGES_STR=${CHECK_CLI_PACKAGES:-"@openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli opencode-ai"}
+# Defaults to the requested packages unless overridden via env.
+# Note: @anthropic-ai/claude-code removed as it's now using native install
+PACKAGES_STR=${CHECK_CLI_PACKAGES:-"@openai/codex @google/gemini-cli @vibe-kit/grok-cli opencode-ai"}
 
 # Allow opt-out at runtime via env.
 if [[ "${CHECK_CLI_UPDATES:-1}" != "1" ]]; then
@@ -113,5 +114,12 @@ echo ""
 echo "[cli-check] Env vars:"
 echo "  - CHECK_CLI_UPDATES=0 to skip checks"
 echo "  - CLI_AUTO_UPDATE=1 to auto-update (alias: CHECK_CLI_AUTO_UPDATE)"
+
+# Check Claude Code (native install) separately
+if command -v claude >/dev/null 2>&1; then
+  echo ""
+  echo "[cli-check] Claude Code is installed via native installer."
+  echo "[cli-check] It auto-updates in the background. To update manually: claude update"
+fi
 
 exit 0

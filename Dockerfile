@@ -7,7 +7,7 @@ ARG BASE_IMAGE=debian:bookworm-slim
 ARG NODE_VERSION=22
 ARG NVM_VERSION=v0.40.1
 ARG SPEC_KIT_REPO=git+https://github.com/github/spec-kit.git
-ARG GLOBAL_NPM_PACKAGES="@openai/codex@latest @google/gemini-cli@latest @anthropic-ai/claude-code@latest @vibe-kit/grok-cli@latest opencode-ai@latest @pimzino/claude-code-spec-workflow@latest ccusage@latest @github/copilot@latest @ast-grep/cli"
+ARG GLOBAL_NPM_PACKAGES="@openai/codex@latest @google/gemini-cli@latest @vibe-kit/grok-cli@latest opencode-ai@latest @pimzino/claude-code-spec-workflow@latest ccusage@latest @github/copilot@latest @ast-grep/cli"
 
 ######################################################################
 # Stage 1: base-apt (system packages only; reproducible & cached)
@@ -164,7 +164,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     NVM_DIR=/home/aiagent/.nvm \
     NODE_VERSION=${NODE_VERSION} \
     CHECK_CLI_UPDATES=1 \
-    CHECK_CLI_PACKAGES="@openai/codex @google/gemini-cli @anthropic-ai/claude-code @vibe-kit/grok-cli opencode-ai @github/copilot"
+    CHECK_CLI_PACKAGES="@openai/codex @google/gemini-cli @vibe-kit/grok-cli opencode-ai @github/copilot"
 
 # 執行期需用到的 GitHub CLI 與開發工具(保持最小依賴)
 # hadolint ignore=DL3008  # 最小化依賴,沿用官方 gh 套件庫版本
@@ -246,6 +246,11 @@ RUN set -eux; \
     fi; \
     uvx --version; \
     echo "[final] uvx installed and working."
+
+# 安裝 Claude Code (Native Install)
+RUN set -eux; \
+    curl -fsSL https://claude.ai/install.sh | bash; \
+    echo "[final] Claude Code installed via native installer."
 
 # 健康檢查：Node 可用即視為健康
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
