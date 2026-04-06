@@ -18,11 +18,20 @@ _alias_confirm() {
   esac
 }
 
-# Wrapper to run an underlying dangerous command
+# Wrapper to run an underlying dangerous command.
+# Default enabled; set ALIAS_FRAMEWORK_RUN_DANGER_ENABLED=0 to disable.
 _run_danger() {
+  local enabled="${ALIAS_FRAMEWORK_RUN_DANGER_ENABLED:-1}"
+  case "$enabled" in
+    0|false|FALSE|no|NO|off|OFF)
+      printf '[alias-framework] _run_danger disabled by ALIAS_FRAMEWORK_RUN_DANGER_ENABLED=%s\n' "$enabled" >&2
+      return 1
+      ;;
+  esac
+
   local cmd="$1"; shift
   if _alias_confirm "Confirm elevated / dangerous operation: $cmd $* ? (yes/no)"; then
-    eval "$cmd" "$@"
+    "$cmd" "$@"
   fi
 }
 
