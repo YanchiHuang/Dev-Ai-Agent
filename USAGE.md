@@ -61,6 +61,7 @@ CHECK_CLI_UPDATES=1
 
 # 自動更新過期的 CLI (1=啟用, 0=停用)
 CLI_AUTO_UPDATE=0
+
 ```
 
 ### 3. 建立容器
@@ -109,6 +110,24 @@ ccgod  # 等同於：claude --dangerously-skip-permissions
 ```
 
 注意：`cskip` 與 `ccgod` 會直接跳過 Claude Code 的權限請求流程，可能導致未經確認的檔案/命令操作，請僅在可信任的倉庫與可控環境使用。
+
+### RTK (Rust Token Killer)
+
+```bash
+# Configure Claude + Gemini + Codex integrations in one step
+bash ~/config/scripts/setup-rtk.sh all --auto-patch
+
+# Or configure each tool separately
+bash ~/.claude/setup-claude.sh --auto-patch
+bash ~/.gemini/setup-gemini.sh --auto-patch
+bash ~/.codex/setup-codex.sh
+
+# Verify installation
+rtk --version
+rtk gain
+```
+
+`rtk` 會為 Claude Code、Gemini CLI 與 Codex CLI 建立對應的 hook / 指示檔，讓 shell 指令走較精簡的輸出路徑以降低 token 消耗。
 
 ### Codex CLI (OpenAI)
 

@@ -77,6 +77,7 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
    bash ~/.claude/setup-claude.sh
    bash ~/.gemini/setup-gemini.sh
    bash ~/.codex/setup-codex.sh
+   bash ~/config/scripts/setup-rtk.sh all --auto-patch  # RTK hooks / AGENTS.md / RTK.md
    bash ~/.claude/setup-spec-workflow.sh   # 啟用 Spec Workflow 快捷指令
    bash config/scripts/setup-copilot-godmode.sh  # 啟用 ctgod（Copilot --allow-all-tools，請確認環境安全）
    ```
@@ -181,6 +182,9 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 
     # 更新 Claude Code (使用 native installer)
     claude update
+
+    # 安裝 RTK (binary release)
+    curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
     ```
 
 歡迎將 Dev-Ai-Agent 作為 AI 助手或自動化開發環境的基礎，依需求擴充更多 CLI、腳本與服務！

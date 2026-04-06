@@ -35,7 +35,7 @@ if [ -n "${PS1:-}" ] && [ -z "${_ALIAS_FRAMEWORK_STATUS_CHECKED:-}" ]; then
   _ALIAS_FRAMEWORK_STATUS_CHECKED=1
   # Quick check without running version commands (too slow)
   _missing=""
-  for c in claude codex copilot gemini; do
+  for c in claude codex copilot gemini rtk; do
     command -v "$c" >/dev/null 2>&1 || _missing="${_missing}${c} "
   done
   if [ -n "${_missing}" ]; then

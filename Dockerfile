@@ -110,6 +110,10 @@ RUN set -eux; \
 # 將後續 shell 命令誤認為新指令（例如出現 "unknown instruction: chmod" 的錯誤）。
 # shellcheck disable=SC2016  # 需在檔案中保留未展開的 $HOME 與 "$@" 字樣
 # hadolint ignore=DL3013  # 安裝 uv 使用最新版本以便取得修正；若需可重現建置，請改為指定版本或在 CI 指定 UV_VERSION
+RUN set -eux; \
+    curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh; \
+    "${HOME}/.local/bin/rtk" --version
+
 RUN --mount=type=cache,target=/home/aiagent/.cache/uv,uid=1000,gid=1000 \
     set -eux; \
     export PATH="$HOME/.local/bin:$PATH"; \
