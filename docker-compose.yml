@@ -28,6 +28,7 @@ services:
     working_dir: /home/aiagent/workspace
     tty: true
     stdin_open: true
+    restart: always
     networks:
       - aiagent-network
 
