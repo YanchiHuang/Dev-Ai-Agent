@@ -7,7 +7,7 @@ ARG BASE_IMAGE=debian:bookworm-slim
 ARG NODE_VERSION=22
 ARG NVM_VERSION=v0.40.1
 ARG SPEC_KIT_REPO=git+https://github.com/github/spec-kit.git
-ARG GLOBAL_NPM_PACKAGES="@openai/codex@latest @google/gemini-cli@latest @vibe-kit/grok-cli@latest opencode-ai@latest @pimzino/claude-code-spec-workflow@latest ccusage@latest @github/copilot@latest @ast-grep/cli"
+ARG GLOBAL_NPM_PACKAGES="@openai/codex@latest @google/gemini-cli@latest @vibe-kit/grok-cli@latest opencode-ai@latest @mariozechner/pi-coding-agent@latest @pimzino/claude-code-spec-workflow@latest ccusage@latest @github/copilot@latest @ast-grep/cli"
 
 ######################################################################
 # Stage 1: base-apt (system packages only; reproducible & cached)
@@ -88,7 +88,7 @@ WORKDIR /home/aiagent
 COPY --chown=aiagent:aiagent config/gitconfig /home/aiagent/.gitconfig
 
 # 基本目錄
-RUN mkdir -p config workspace .ssh projects .gemini bin \
+RUN mkdir -p config workspace .ssh projects .gemini .pi/agent bin \
     && chmod 700 .ssh
 
 # 安裝 NVM + Node + 全域 npm CLI
@@ -168,7 +168,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     NVM_DIR=/home/aiagent/.nvm \
     NODE_VERSION=${NODE_VERSION} \
     CHECK_CLI_UPDATES=1 \
-    CHECK_CLI_PACKAGES="@openai/codex @google/gemini-cli @vibe-kit/grok-cli opencode-ai @github/copilot"
+    CHECK_CLI_PACKAGES="@openai/codex @google/gemini-cli @vibe-kit/grok-cli opencode-ai @mariozechner/pi-coding-agent @github/copilot"
 
 # 執行期需用到的 GitHub CLI 與開發工具(保持最小依賴)
 # hadolint ignore=DL3008  # 最小化依賴,沿用官方 gh 套件庫版本
@@ -219,7 +219,7 @@ COPY --chown=aiagent:aiagent --chmod=755 config/scripts/check-cli-updates.sh /ho
 COPY --chown=aiagent:aiagent --chmod=755 config/scripts/entrypoint.sh        /home/aiagent/bin/entrypoint.sh
 
 # 預設工作目錄與掛載點
-RUN mkdir -p workspace projects .ssh .gemini config
+RUN mkdir -p workspace projects/pi-sessions .ssh .gemini .pi/agent config
 WORKDIR /home/aiagent/workspace
 
 # PATH：提供非互動 shell 也能直接叫到 node/npm/npx/uv 等

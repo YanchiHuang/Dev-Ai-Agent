@@ -65,7 +65,7 @@ ai_cli_status() {
   tmp=$(mktemp 2>/dev/null || echo "/tmp/ai_cli_status.$$")
   {
     echo '=== AI CLI availability ==='
-    for c in claude codex copilot gemini rtk; do
+    for c in claude codex copilot gemini pi rtk; do
       if command -v "$c" >/dev/null 2>&1; then
         printf '  %-8s OK\n' "$c"
       else

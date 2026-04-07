@@ -1,0 +1,4 @@
+{
+  "shellCommandPrefix": "shopt -s expand_aliases\n[ -f ~/.bashrc ] && . ~/.bashrc",
+  "sessionDir": "/home/aiagent/projects/pi-sessions"
+}

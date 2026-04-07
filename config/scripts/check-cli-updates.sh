@@ -5,7 +5,7 @@ set -euo pipefail
 
 # Defaults to the requested packages unless overridden via env.
 # Note: @anthropic-ai/claude-code removed as it's now using native install
-PACKAGES_STR=${CHECK_CLI_PACKAGES:-"@openai/codex @google/gemini-cli @vibe-kit/grok-cli opencode-ai"}
+PACKAGES_STR=${CHECK_CLI_PACKAGES:-"@openai/codex @google/gemini-cli @vibe-kit/grok-cli opencode-ai @mariozechner/pi-coding-agent @github/copilot"}
 
 # Allow opt-out at runtime via env.
 if [[ "${CHECK_CLI_UPDATES:-1}" != "1" ]]; then

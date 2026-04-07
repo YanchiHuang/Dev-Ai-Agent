@@ -147,6 +147,27 @@ cxgod "deploy my app"  # 等同於：codex --dangerously-bypass-approvals-and-sa
 
 注意：`cxgod` 會跳過 Codex CLI 的 sandbox 與審核步驟，請僅在完全受控的環境執行。
 
+### Pi Coding Agent
+
+```bash
+# 建議先執行一次設定腳本以安裝 alias 並建立 session 目錄
+bash ~/.pi/setup-pi.sh
+
+# 啟動 Pi 互動模式
+pi
+
+# 延續最近一次 session
+pi -c
+
+# 選擇既有 session
+pi -r
+
+# 查看設定與已安裝的 Pi package
+pi config
+```
+
+注意：Pi 的全域設定掛載於 `~/.pi`，預設會先載入 `~/.bashrc` 以啟用 alias，並將 session 儲存在 `/home/aiagent/projects/pi-sessions`。Pi 也會自動讀取目前工作目錄向上層搜尋到的 `AGENTS.md` 或 `CLAUDE.md`。
+
 ### Gemini CLI
 
 ```bash
@@ -189,7 +210,7 @@ bash config/scripts/setup-copilot-godmode.sh
 
 ### 設定檔掛載
 
-- **`config/`**: 主機上的 `config` 目錄下的各工具設定檔 (如 `gemini`, `claude`, `codex`) 會被分別掛載至容器內家目錄的對應路徑 (如 `~/.gemini`)。這讓您可以直接在主機上透過 Git 版本控制所有 AI 工具的設定。
+- **`config/`**: 主機上的 `config` 目錄下的各工具設定檔 (如 `gemini`, `claude`, `codex`, `pi`) 會被分別掛載至容器內家目錄的對應路徑 (如 `~/.gemini`, `~/.pi`)。這讓您可以直接在主機上透過 Git 版本控制所有 AI 工具的設定。
 
 ### SSH 金鑰
 
@@ -298,7 +319,7 @@ npm install -g <package-name>
 
 - `CHECK_CLI_UPDATES=1` 啟動時檢查全域 CLI 是否過期並列出更新指令
 - `CLI_AUTO_UPDATE=1` 啟動時自動執行 `npm i -g <pkg>@latest` 更新偵測到過期的 CLI
-- `CHECK_CLI_PACKAGES` 可自訂要檢查的套件清單（以空白分隔）
+- `CHECK_CLI_PACKAGES` 可自訂要檢查的套件清單（以空白分隔，預設包含 Codex、Gemini、Grok、Opencode、Pi 與 Copilot）
 
 在單次啟動時臨時覆蓋設定：
 
