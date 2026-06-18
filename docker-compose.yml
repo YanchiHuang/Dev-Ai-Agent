@@ -9,7 +9,6 @@ services:
     container_name: devaiagent
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - NODE_VERSION=${NODE_VERSION:-22}
       - TZ=${TZ:-UTC}
@@ -19,7 +18,7 @@ services:
       - ./workspace:/home/aiagent/workspace
       - ./config:/home/aiagent/config
       - ./config/gitconfig:/home/aiagent/.gitconfig
-      - ./config/gemini:/home/aiagent/.gemini
+      - ./config/agy:/home/aiagent/.gemini
       - ./config/claude:/home/aiagent/.claude
       - ./config/codex:/home/aiagent/.codex
       - ./config/opencode:/home/aiagent/.opencode
