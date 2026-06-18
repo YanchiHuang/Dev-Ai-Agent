@@ -29,7 +29,6 @@ cp .env.example .env
 # --- AI API 金鑰 (必要) ---
 # -------------------------
 OPENAI_API_KEY=your_openai_api_key_here
-GEMINI_API_KEY=your_gemini_api_key_here
 ANTHROPIC_API_KEY=your_anthropic_api_key_here
 
 # ----------------------------------
@@ -45,7 +44,6 @@ COPILOT_MODEL=""
 # --------------------------
 # CLAUDE_CODE_MODEL=claude-3-sonnet-20240229
 # OPENAI_MODEL=gpt-4
-# GEMINI_MODEL=gemini-pro
 
 # -------------------------
 # --- 容器環境設定 (可選) ---
@@ -114,20 +112,20 @@ ccgod  # 等同於：claude --dangerously-skip-permissions
 ### RTK (Rust Token Killer)
 
 ```bash
-# Configure Claude + Gemini + Codex integrations in one step
+# Configure Claude + Codex integrations in one step
 bash ~/config/scripts/setup-rtk.sh all --auto-patch
 
 # Or configure each tool separately
 bash ~/.claude/setup-claude.sh --auto-patch
-bash ~/.gemini/setup-gemini.sh --auto-patch
 bash ~/.codex/setup-codex.sh
+bash ~/.gemini/setup-agy.sh
 
 # Verify installation
 rtk --version
 rtk gain
 ```
 
-`rtk` 會為 Claude Code、Gemini CLI 與 Codex CLI 建立對應的 hook / 指示檔，讓 shell 指令走較精簡的輸出路徑以降低 token 消耗。
+`rtk` 會為 Claude Code 與 Codex CLI 建立對應的 hook / 指示檔，讓 shell 指令走較精簡的輸出路徑以降低 token 消耗。Antigravity CLI (`agy`) 目前僅安裝 alias framework，未設定 RTK hook。
 
 ### Codex CLI (OpenAI)
 
@@ -168,21 +166,21 @@ pi config
 
 注意：Pi 的全域設定掛載於 `~/.pi`，預設會先載入 `~/.bashrc` 以啟用 alias，並將 session 儲存在 `/home/aiagent/projects/pi-sessions`。Pi 也會自動讀取目前工作目錄向上層搜尋到的 `AGENTS.md` 或 `CLAUDE.md`。
 
-### Gemini CLI
+### Antigravity CLI (`agy`)
 
 ```bash
 # 建議先執行一次設定腳本以安裝 alias
-bash ~/.gemini/setup-gemini.sh
+bash ~/.gemini/setup-agy.sh
 
-# 使用 gemini-cli
-gemini "explain this code snippet"
+# 使用 Antigravity CLI
+agy "explain this code snippet"
 
-# 使用快速別名（含高風險指令）
-gchat "請用繁中說明這段程式"  # 一般聊天快捷指令
-ggod "直接改寫整個專案"       # 等同於：gemini --yolo "直接改寫整個專案"
+# 使用快速別名
+ag "請用繁中說明這段程式"
+agyv
 ```
 
-注意：`ggod` 會以 `--yolo` 模式執行 Gemini CLI，跳過額外提示或確認。請僅在完全信任的專案環境內使用。
+注意：Antigravity CLI 設定掛載於 `~/.gemini/antigravity-cli`；驗證或 OAuth token 不應提交到版本控制。
 
 ### GitHub Copilot CLI
 
@@ -210,7 +208,7 @@ bash config/scripts/setup-copilot-godmode.sh
 
 ### 設定檔掛載
 
-- **`config/`**: 主機上的 `config` 目錄下的各工具設定檔 (如 `gemini`, `claude`, `codex`, `pi`) 會被分別掛載至容器內家目錄的對應路徑 (如 `~/.gemini`, `~/.pi`)。這讓您可以直接在主機上透過 Git 版本控制所有 AI 工具的設定。
+- **`config/`**: 主機上的 `config` 目錄下的各工具設定檔 (如 `agy`, `claude`, `codex`, `pi`) 會被分別掛載至容器內家目錄的對應路徑 (如 `~/.gemini`, `~/.pi`)。這讓您可以直接在主機上透過 Git 版本控制所有 AI 工具的設定。
 
 ### SSH 金鑰
 
@@ -269,7 +267,6 @@ sudo chown -R $USER:$USER ./workspace
 ```bash
 # 在容器內檢查環境變數
 echo $OPENAI_API_KEY
-echo $GEMINI_API_KEY
 echo $ANTHROPIC_API_KEY
 ```
 
@@ -280,7 +277,7 @@ echo $ANTHROPIC_API_KEY
 ```bash
 # 測試網路連線
 curl -I https://api.openai.com
-curl -I https://generativelanguage.googleapis.com
+curl -I https://antigravity.google
 curl -I https://api.anthropic.com
 ```
 
@@ -319,7 +316,7 @@ npm install -g <package-name>
 
 - `CHECK_CLI_UPDATES=1` 啟動時檢查全域 CLI 是否過期並列出更新指令
 - `CLI_AUTO_UPDATE=1` 啟動時自動執行 `npm i -g <pkg>@latest` 更新偵測到過期的 CLI
-- `CHECK_CLI_PACKAGES` 可自訂要檢查的套件清單（以空白分隔，預設包含 Codex、Gemini、Grok、Opencode、Pi 與 Copilot）
+- `CHECK_CLI_PACKAGES` 可自訂要檢查的套件清單（以空白分隔，預設包含 Codex、Grok、Opencode、Pi 與 Copilot；`agy` 使用 native installer，不由 npm 檢查）
 
 在單次啟動時臨時覆蓋設定：
 

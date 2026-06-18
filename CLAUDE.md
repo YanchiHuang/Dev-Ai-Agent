@@ -9,7 +9,7 @@ This is a Docker-based AI development environment that provides a containerized 
 ### Key Components
 
 - **Docker Container**: Based on `debian:bookworm-slim` with Node.js 22, Python 3, Git, and GitHub CLI
-- **AI Tools**: Pre-installed Claude Code, Codex CLI, Gemini CLI, and Grok CLI via npm
+- **AI Tools**: Pre-installed Claude Code, Antigravity CLI (`agy`), Codex CLI, and Grok CLI
 - **User Environment**: Non-root user (`aiagent`) for security
 - **Development Tools**: Git, Vim, Powerline, and essential development utilities
 
@@ -25,10 +25,10 @@ This is a Docker-based AI development environment that provides a containerized 
 │   │   ├── claude.json    # Claude Code main config (projects mapping)
 │   │   ├── default_instructions.md # Global system prompt for Claude Code
 │   │   └── setup-claude.sh # Quick setup script for aliases
-│   ├── gemini/            # Gemini CLI configuration
-│   │   ├── settings.json  # Gemini CLI settings (auth, theme, MCP servers)
-│   │   ├── instructions.txt # Global system prompt for Gemini
-│   │   └── setup-gemini.sh # Quick setup script for aliases
+│   ├── agy/               # Antigravity CLI configuration
+│   │   ├── antigravity-cli/settings.json
+│   │   ├── antigravity-cli/mcp_config.json
+│   │   └── setup-agy.sh   # Quick setup script for aliases
 │   ├── codex/             # OpenAI Codex CLI configuration
 │   │   ├── config.toml    # Codex CLI main configuration (model, behavior, etc.)
 │   │   ├── instructions.txt # Global system prompt for Codex
@@ -71,7 +71,7 @@ The container includes these pre-installed AI CLI tools:
 
 - **Claude Code**: `claude` command for AI assistance
 - **Codex CLI**: `codex` command for OpenAI Codex
-- **Gemini CLI**: `gemini` command for Google Gemini
+- **Antigravity CLI**: `agy` command for Google Antigravity
 - **Grok CLI**: `grok` command for Grok AI
 
 All tools require their respective API keys to be set in the `.env` file.
@@ -110,24 +110,25 @@ Note on cskip:
 
 - The `cskip` alias uses `--dangerously-skip-permissions` to bypass permission prompts. This is risky and should only be used in trusted environments and repositories where you fully understand the implications.
 
-### Gemini CLI Configuration
+### Antigravity CLI Configuration
 
-Gemini CLI has dedicated global configuration mounted at `~/.gemini/`:
+Antigravity CLI has dedicated global configuration mounted at `~/.gemini/`:
 
-- **Settings**: `~/.gemini/settings.json` - CLI behavior, auth type, and MCP server configurations
-- **Instructions**: `~/.gemini/instructions.txt` - Global system prompt for consistent AI behavior
-- **Usage**: `gemini chat --instructions ~/.gemini/instructions.txt`
+- **Settings**: `~/.gemini/antigravity-cli/settings.json` - CLI behavior and UI preferences
+- **MCP**: `~/.gemini/antigravity-cli/mcp_config.json` - MCP server configurations
+- **Usage**: `agy`
 
-Create convenient alias for Gemini with pre-loaded instructions:
+Create convenient aliases for Antigravity CLI:
 
 ```bash
-alias gchat='gemini chat --instructions ~/.gemini/instructions.txt'
+alias ag='agy'
+alias agyhelp='agy --help'
 ```
 
 For quick setup, run the initialization script:
 
 ```bash
-bash ~/.gemini/setup-gemini.sh
+bash ~/.gemini/setup-agy.sh
 ```
 
 ### Codex CLI Configuration
@@ -170,7 +171,6 @@ Convenience functions available after setup:
 The project uses environment variables for configuration:
 
 - `OPENAI_API_KEY`: Required for Codex CLI
-- `GEMINI_API_KEY`: Required for Gemini CLI
 - `ANTHROPIC_API_KEY`: Required for Claude Code
 - `NODE_VERSION`: Controls Node.js version (default: 22)
 
@@ -193,9 +193,9 @@ Pre-configured Git settings include:
 ## File Persistence
 
 - `./workspace/` - Shared workspace between host and container
-- `./config/` - Configuration files including Git, Claude Code, Gemini, and Codex settings
+- `./config/` - Configuration files including Git, Claude Code, Antigravity, and Codex settings
 - `./config/claude/` - Claude Code global configuration (mounted to `~/.claude/`)
-- `./config/gemini/` - Gemini CLI global configuration (mounted to `~/.gemini/`)
+- `./config/agy/` - Antigravity CLI global configuration (mounted to `~/.gemini/`)
 - `./config/codex/` - Codex CLI global configuration (mounted to `~/.codex/`)
 - `~/.ssh` - SSH keys mounted read-only from host
 - `projects` - Named volume for persistent project data

@@ -18,7 +18,7 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 | `config/scripts/check-cli-updates.sh` | 利用 `npm outdated -g --json` 檢查全域 CLI 版本，並可選擇自動更新。                            | 支援環境變數 `CHECK_CLI_UPDATES`、`CLI_AUTO_UPDATE`、`CHECK_CLI_PACKAGES`。                              |
 | `config/claude`                       | 提供 Claude Code 設定、預設指令與 Spec Workflow alias 腳本。                                   | 支援 Spec Workflow 別名與自動化流程。                                                                    |
 | `config/codex`                        | Codex CLI 的 `config.toml` 與初始化腳本。                                                      | 預先配置多個 provider/profile（OpenAI、Ollama、vLLM 等）。                                               |
-| `config/gemini`                       | Gemini CLI 設定檔與系統提示。                                                                  | 預載 MCP GitHub server 設定與繁體中文回應指示。                                                          |
+| `config/agy`                          | Antigravity CLI (`agy`) 設定檔與 MCP 設定。                                                     | 掛載到 `~/.gemini`，使用 `~/.gemini/antigravity-cli` 官方設定路徑。                                      |
 | `config/pi`                           | Pi Coding Agent 的全域設定、預設 AGENTS 與初始化腳本。                                         | 掛載到 `~/.pi`，並將 session 導向 `/home/aiagent/projects/pi-sessions`。                                |
 | `.env.example`                        | 範例環境變數。                                                                                 | 說明 Node 版本、API 金鑰與 CLI 更新開關。                                                                |
 | `USAGE.md`                            | 詳細操作手冊。                                                                                 | 包含建置、登入、工具使用、疑難排解、進階設定。                                                           |
@@ -27,7 +27,7 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 
 ## 核心特色
 
-- **多重 AI CLI**：`claude` (Native Install)、`@openai/codex`、`@google/gemini-cli`、`@vibe-kit/grok-cli`、`opencode-ai`、`@mariozechner/pi-coding-agent`、`@github/copilot` 皆已全域安裝，另含 `@pimzino/claude-code-spec-workflow`、`ccusage`。
+- **多重 AI CLI**：`claude` (Native Install)、`agy` (Native Install)、`@openai/codex`、`@vibe-kit/grok-cli`、`opencode-ai`、`@mariozechner/pi-coding-agent`、`@github/copilot` 皆已安裝，另含 `@pimzino/claude-code-spec-workflow`、`ccusage`。
 - **自動化工作流**：內建 Spec Workflow 別名，快速啟用規格驅動開發。
 - **安全與一致性**：使用非 root 使用者、固定 UID/GID=1000，預掛載 `config/`、`workspace/`、`projects` 以保存設定與成果。
 - **啟動檢查機制**：容器啟動時自動檢查全域 CLI 是否過期，可選擇自動更新或僅提示更新指令。
@@ -44,7 +44,7 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 ├── config/
 │   ├── scripts/              # 入口腳本與 CLI 更新檢查
 │   ├── claude/               # Claude Code、Spec Workflow 設定
-│   ├── gemini/               # Gemini CLI 設定與系統提示
+│   ├── agy/                  # Antigravity CLI 設定與 MCP 設定
 │   ├── codex/                # Codex CLI profiles 與初始化腳本
 │   ├── pi/                   # Pi Coding Agent 設定與預設 AGENTS
 │   ├── gitconfig             # 預設 Git 設定
@@ -58,7 +58,7 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 
    ```bash
    cp .env.example .env
-   # 編輯 .env 並填入 OPENAI_API_KEY、GEMINI_API_KEY、ANTHROPIC_API_KEY 等金鑰
+   # 編輯 .env 並填入 OPENAI_API_KEY、ANTHROPIC_API_KEY 等金鑰
    ```
 
 2. **建置並啟動容器**
@@ -77,7 +77,7 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 
    ```bash
    bash ~/.claude/setup-claude.sh
-   bash ~/.gemini/setup-gemini.sh
+   bash ~/.gemini/setup-agy.sh
    bash ~/.codex/setup-codex.sh
    bash ~/.pi/setup-pi.sh
    bash ~/config/scripts/setup-rtk.sh all --auto-patch  # RTK hooks / AGENTS.md / RTK.md
@@ -92,8 +92,8 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 | 變數                                                      | 預設值           | 說明                                                                  |
 | --------------------------------------------------------- | ---------------- | --------------------------------------------------------------------- |
 | `NODE_VERSION`                                            | `22`             | 建置時安裝的 Node.js 版本，可在 `.env` 或 `docker-compose.yml` 覆寫。 |
-| `OPENAI_API_KEY` / `GEMINI_API_KEY` / `ANTHROPIC_API_KEY` | `""`             | 各 CLI 所需的 API 金鑰。                                              |
-| `CLAUDE_CODE_MODEL` / `OPENAI_MODEL` / `GEMINI_MODEL`     | `""`             | (可選) 指定各 AI 工具使用的模型。                                     |
+| `OPENAI_API_KEY` / `ANTHROPIC_API_KEY`                    | `""`             | 各 CLI 所需的 API 金鑰。                                              |
+| `CLAUDE_CODE_MODEL` / `OPENAI_MODEL`                      | `""`             | (可選) 指定各 AI 工具使用的模型。                                     |
 | `TZ`                                                      | `UTC`            | 設定容器的時區，例如 `Asia/Taipei`。                                  |
 | `CHECK_CLI_UPDATES`                                       | `1`              | 啟動時是否檢查全域 CLI 更新 (1=啟用, 0=停用)。                        |
 | `CLI_AUTO_UPDATE`                                         | `0`              | 是否在啟動時自動更新過期的 CLI (1=啟用, 0=停用)。                     |
@@ -113,7 +113,6 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 - **AI 助理**:
   - `github.copilot` & `github.copilot-chat`
   - `anthropic.claude-code`
-  - `Google.geminicodeassist`
 - **程式碼品質與格式化**:
   - `esbenp.prettier-vscode` - 自動格式化。
   - `dbaeumer.vscode-eslint` - 語法檢查。
@@ -125,7 +124,7 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 
 容器啟動時，`entrypoint.sh` 會呼叫 `check-cli-updates.sh`：
 
-1. 解析 `CHECK_CLI_PACKAGES`（預設包含 Codex、Gemini、Grok、Opencode、Pi、Copilot，不含 Claude Code 因其使用 native install）。
+1. 解析 `CHECK_CLI_PACKAGES`（預設包含 Codex、Grok、Opencode、Pi、Copilot，不含 Claude Code 與 Antigravity CLI，因兩者使用 native install）。
 2. 執行 `npm outdated -g` 判斷版本差異，失敗時不阻斷啟動。
 3. 若偵測到更新，顯示建議指令；當 `CLI_AUTO_UPDATE=1` 時，自動執行 `npm i -g <pkg>@latest`。
 4. Claude Code 使用 native installer，會自動在背景更新，或可手動執行 `claude update`。
@@ -135,7 +134,7 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 | 工具               | 指令                                     | 補充                                                                                                                                                                                                                     |
 | ------------------ | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Claude Code        | `claude`, `claude chat`, `claude edit`   | 使用 native install 安裝，會自動背景更新。手動執行 `~/.claude/setup-claude.sh` 後會加入 `cc`, `cchelp`, `cskip`, `ccgod` 等 alias；`cskip`/`ccgod` 會跳過安全檢查，僅在可完全信任的倉庫使用。更新方式：`claude update`。 |
-| Gemini CLI         | `gemini`, `gemini chat`                  | 手動執行 `~/.gemini/setup-gemini.sh` 後會建立 `gchat`, `ggod` 等別名；`ggod` 會以 `--yolo` 模式繞過確認，請特別留意執行風險。                                                                                            |
+| Antigravity CLI    | `agy`                                    | 使用官方 native installer 安裝，設定位於 `~/.gemini/antigravity-cli`；手動執行 `~/.gemini/setup-agy.sh` 後會建立 `ag`, `agyhelp`, `agyv` 等別名。                                                                            |
 | Codex CLI          | `codex`, `codex --profile <name>`        | `config.toml` 已定義 OpenAI、Ollama、vLLM 等 profiles；執行 `~/.codex/setup-codex.sh` 會加入 `cx`, `cxgod` 等 alias，其中 `cxgod` 會略過 sandbox 與審核程序。                                                            |
 | Pi Coding Agent    | `pi`, `pi -c`, `pi -r`                   | 設定目錄掛載於 `~/.pi`；執行 `~/.pi/setup-pi.sh` 後會加入 `pihelp`、`piresume`、`picont`、`piconfig` 等 alias。全域設定會啟用 `~/.bashrc` alias 載入，session 預設保存於 `/home/aiagent/projects/pi-sessions`，並自動讀取專案內的 `AGENTS.md` 或 `CLAUDE.md`。 |
 | Grok CLI           | `grok`                                   | 由 Dockerfile 全域安裝，可直接對話。                                                                                                                                                                                     |
@@ -151,7 +150,7 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 
 - **`projects` (具名資料卷)**: 這是一個由 Docker 管理的具名資料卷 (named volume)，掛載於容器內的 `/home/aiagent/projects`。它適合用來存放不需要在主機上頻繁直接編輯，但希望在不同專案或容器生命週期之間長期保存的資料，例如大型資料集、測試成品或次要專案。
 
-- **`config/` (設定檔掛載)**: 所有 `config/` 目錄下的設定檔會分別掛載至容器內對應的家目錄路徑 (例如 `~/.claude`, `~/.gemini`, `~/.pi`)。這讓您可以直接在主機上版本控制所有 AI 工具的設定。
+- **`config/` (設定檔掛載)**: 所有 `config/` 目錄下的設定檔會分別掛載至容器內對應的家目錄路徑 (例如 `~/.claude`, `~/.gemini/antigravity-cli`, `~/.pi`)。這讓您可以直接在主機上版本控制所有 AI 工具的設定。
 
 - **Git 設定**: 預設的 Git 設定 (`user.name`, `user.email`) 可在容器內隨時透過 `git config --global` 指令覆寫。
 
@@ -181,7 +180,7 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 
     ```bash
     # 更新 npm 全域套件
-    npm i -g @openai/codex@latest @google/gemini-cli@latest \
+    npm i -g @openai/codex@latest \
       @vibe-kit/grok-cli@latest opencode-ai@latest \
       @mariozechner/pi-coding-agent@latest @github/copilot@latest
 
@@ -198,8 +197,8 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 
 本專案提供一個可選的「模組化 alias & 函式載入系統」，避免在 `~/.bashrc` 中堆疊大量重複腳本。特色：
 
-- 分類管理：AI CLI (`ai-claude.sh`, `ai-codex.sh`, `ai-gemini.sh`, `ai-copilot.sh`, `ai-pi.sh`)、`git`、`docker`、`system`、`custom`。
-- 安全包裹：具破壞性或繞過安全檢查的指令改為函式，執行前互動確認（`ccgod`, `cxgod`, `ctgod`, `ggod`）。
+- 分類管理：AI CLI (`ai-claude.sh`, `ai-codex.sh`, `ai-agy.sh`, `ai-copilot.sh`, `ai-pi.sh`)、`git`、`docker`、`system`、`custom`。
+- 安全包裹：具破壞性或繞過安全檢查的指令改為函式，執行前互動確認（`ccgod`, `cxgod`, `ctgod`）。
 - 輕量安裝 / 可卸載：`setup-aliases.sh` / `uninstall-aliases.sh`。
 - 工具狀態：`ai_cli_status` 顯示可用 CLI 與版本資訊。
 - 檔案追蹤：`aliases_sources` 可看哪些檔案被載入。
@@ -232,7 +231,7 @@ fi
 │   ├── ai-claude.sh
 │   ├── ai-codex.sh
 │   ├── ai-copilot.sh
-│   ├── ai-gemini.sh
+│   ├── ai-agy.sh
 │   ├── ai-pi.sh
 │   ├── git.sh
 │   ├── docker.sh
@@ -252,7 +251,7 @@ fi
 | `aliases_find <keyword>`             | 搜尋 alias（有 `fzf` 進入互動模式）      |
 | `aliases_sources`                    | 顯示實際載入的檔案清單                   |
 | `aliases_doc [-m] [-o file]`         | 導出目前 alias 文件（純文字或 Markdown） |
-| `ccgod` / `cxgod` / `ctgod` / `ggod` | 危險操作，執行前會要求二次確認           |
+| `ccgod` / `cxgod` / `ctgod`          | 危險操作，執行前會要求二次確認           |
 
 `aliases_doc` 範例：
 

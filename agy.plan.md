@@ -17,8 +17,8 @@ phase log while the migration is implemented.
 | 1. Confirm `agy` install/auth details | Done | `8f51ab4` |
 | 2. Replace Docker install path | Done | `b481498` |
 | 3. Replace config and aliases | Done | `f1e97eb` |
-| 4. Remove Gemini env/config surface | Done | Pending |
-| 5. Update documentation and editor metadata | Pending | Pending |
+| 4. Remove Gemini env/config surface | Done | `d8c8789` |
+| 5. Update documentation and editor metadata | Done | Pending |
 | 6. Update CI and verification | Pending | Pending |
 
 ## Phase 1 Findings
