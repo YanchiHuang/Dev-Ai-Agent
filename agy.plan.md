@@ -18,8 +18,8 @@ phase log while the migration is implemented.
 | 2. Replace Docker install path | Done | `b481498` |
 | 3. Replace config and aliases | Done | `f1e97eb` |
 | 4. Remove Gemini env/config surface | Done | `d8c8789` |
-| 5. Update documentation and editor metadata | Done | Pending |
-| 6. Update CI and verification | Pending | Pending |
+| 5. Update documentation and editor metadata | Done | `5978d0c` |
+| 6. Update CI and verification | Done | This commit |
 
 ## Phase 1 Findings
 
@@ -152,6 +152,20 @@ Phase 1 decisions:
   `docker build -t dev-ai-agent .`
 - Smoke test:
   `docker run --rm --user aiagent dev-ai-agent bash -lc "codex --version && agy --version && claude --version"`
+
+Verification results:
+
+- `bash -n` passed for shell scripts.
+- JSON validation passed for `config/agy/antigravity-cli/settings.json` and
+  `config/agy/antigravity-cli/mcp_config.json`.
+- Static search found no active Gemini CLI runtime references outside this
+  migration plan; remaining `.gemini` paths are Antigravity's documented config
+  path.
+- Docker build passed.
+- Container smoke test passed:
+  - `codex-cli 0.141.0`
+  - `agy 1.0.9`
+  - `Claude Code 2.1.181`
 
 ## Risks
 

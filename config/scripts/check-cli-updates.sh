@@ -7,6 +7,22 @@ set -euo pipefail
 # Note: @anthropic-ai/claude-code removed as it's now using native install
 PACKAGES_STR=${CHECK_CLI_PACKAGES:-"@openai/codex @vibe-kit/grok-cli opencode-ai @mariozechner/pi-coding-agent @github/copilot"}
 
+report_native_clis() {
+  # Check Claude Code (native install) separately
+  if command -v claude >/dev/null 2>&1; then
+    echo ""
+    echo "[cli-check] Claude Code is installed via native installer."
+    echo "[cli-check] It auto-updates in the background. To update manually: claude update"
+  fi
+
+  # Check Antigravity CLI (native install) separately
+  if command -v agy >/dev/null 2>&1; then
+    echo ""
+    echo "[cli-check] Antigravity CLI is installed via native installer."
+    echo "[cli-check] It self-updates in the background during regular runs."
+  fi
+}
+
 # Allow opt-out at runtime via env.
 if [[ "${CHECK_CLI_UPDATES:-1}" != "1" ]]; then
   exit 0
@@ -15,12 +31,14 @@ fi
 # Ensure npm is available in PATH (NVM paths are set in the image), but do a soft check.
 if ! command -v npm >/dev/null 2>&1; then
   echo "[cli-check] npm is not available; skipping version check." >&2
+  report_native_clis
   exit 0
 fi
 
 # Split packages into array safely (handles whitespace-separated list)
 read -r -a PACKAGES <<<"${PACKAGES_STR}"
 if [[ ${#PACKAGES[@]} -eq 0 ]]; then
+  report_native_clis
   exit 0
 fi
 
@@ -40,12 +58,14 @@ if [[ -z "${OUTDATED_JSON}" ]]; then
   else
     echo "[cli-check] All checked CLIs appear up-to-date."
   fi
+  report_native_clis
   exit 0
 fi
 
 # If JSON is an empty object, nothing to update.
 if [[ "${OUTDATED_JSON}" == "{}" ]]; then
   echo "[cli-check] All checked CLIs are up-to-date."
+  report_native_clis
   exit 0
 fi
 
@@ -115,18 +135,6 @@ echo "[cli-check] Env vars:"
 echo "  - CHECK_CLI_UPDATES=0 to skip checks"
 echo "  - CLI_AUTO_UPDATE=1 to auto-update (alias: CHECK_CLI_AUTO_UPDATE)"
 
-# Check Claude Code (native install) separately
-if command -v claude >/dev/null 2>&1; then
-  echo ""
-  echo "[cli-check] Claude Code is installed via native installer."
-  echo "[cli-check] It auto-updates in the background. To update manually: claude update"
-fi
-
-# Check Antigravity CLI (native install) separately
-if command -v agy >/dev/null 2>&1; then
-  echo ""
-  echo "[cli-check] Antigravity CLI is installed via native installer."
-  echo "[cli-check] It self-updates in the background during regular runs."
-fi
+report_native_clis
 
 exit 0
