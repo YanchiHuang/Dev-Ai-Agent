@@ -5,7 +5,7 @@ set -euo pipefail
 
 # Defaults to the requested packages unless overridden via env.
 # Note: @anthropic-ai/claude-code removed as it's now using native install
-PACKAGES_STR=${CHECK_CLI_PACKAGES:-"@openai/codex @google/gemini-cli @vibe-kit/grok-cli opencode-ai @mariozechner/pi-coding-agent @github/copilot"}
+PACKAGES_STR=${CHECK_CLI_PACKAGES:-"@openai/codex @vibe-kit/grok-cli opencode-ai @mariozechner/pi-coding-agent @github/copilot"}
 
 # Allow opt-out at runtime via env.
 if [[ "${CHECK_CLI_UPDATES:-1}" != "1" ]]; then
@@ -120,6 +120,13 @@ if command -v claude >/dev/null 2>&1; then
   echo ""
   echo "[cli-check] Claude Code is installed via native installer."
   echo "[cli-check] It auto-updates in the background. To update manually: claude update"
+fi
+
+# Check Antigravity CLI (native install) separately
+if command -v agy >/dev/null 2>&1; then
+  echo ""
+  echo "[cli-check] Antigravity CLI is installed via native installer."
+  echo "[cli-check] It self-updates in the background during regular runs."
 fi
 
 exit 0
