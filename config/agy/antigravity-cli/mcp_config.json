@@ -1,6 +1,4 @@
 {
-  "theme": "Default",
-  "selectedAuthType": "oauth-personal",
   "mcpServers": {
     "github": {
       "command": "npx",
