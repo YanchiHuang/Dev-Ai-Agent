@@ -193,7 +193,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     fzf \
     jq \
     yq \
-    unzip; \
+    unzip \
+    xz-utils; \
     rm -rf /var/lib/apt/lists/*; \
     ln -s /usr/bin/fdfind /usr/local/bin/fd
 
@@ -261,6 +262,13 @@ RUN set -eux; \
     curl -fsSL https://antigravity.google/cli/install.sh | bash; \
     agy --version; \
     echo "[final] Antigravity CLI installed via native installer."
+
+# Install abtop as a native binary.
+RUN set -eux; \
+    export ABTOP_INSTALL_DIR="/home/aiagent/.local"; \
+    curl --proto '=https' --tlsv1.2 -LsSf https://github.com/graykode/abtop/releases/latest/download/abtop-installer.sh | sh; \
+    abtop --version; \
+    echo "[final] abtop installed via native installer."
 
 # 健康檢查：Node 可用即視為健康
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \

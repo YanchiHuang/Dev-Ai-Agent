@@ -27,7 +27,7 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 
 ## 核心特色
 
-- **多重 AI CLI**：`claude` (Native Install)、`agy` (Native Install)、`@openai/codex`、`@vibe-kit/grok-cli`、`opencode-ai`、`@mariozechner/pi-coding-agent`、`@github/copilot` 皆已安裝，另含 `@pimzino/claude-code-spec-workflow`、`ccusage`。
+- **多重 AI CLI**：`claude` (Native Install)、`agy` (Native Install)、`@openai/codex`、`@vibe-kit/grok-cli`、`opencode-ai`、`@mariozechner/pi-coding-agent`、`@github/copilot` 皆已安裝，另含 `@pimzino/claude-code-spec-workflow`、`ccusage`、`abtop`。
 - **自動化工作流**：內建 Spec Workflow 別名，快速啟用規格驅動開發。
 - **安全與一致性**：使用非 root 使用者、固定 UID/GID=1000，預掛載 `config/`、`workspace/`、`projects` 以保存設定與成果。
 - **啟動檢查機制**：容器啟動時自動檢查全域 CLI 是否過期，可選擇自動更新或僅提示更新指令。
@@ -124,7 +124,7 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 
 容器啟動時，`entrypoint.sh` 會呼叫 `check-cli-updates.sh`：
 
-1. 解析 `CHECK_CLI_PACKAGES`（預設包含 Codex、Grok、Opencode、Pi、Copilot，不含 Claude Code 與 Antigravity CLI，因兩者使用 native install）。
+1. 解析 `CHECK_CLI_PACKAGES`（預設包含 Codex、Grok、Opencode、Pi、Copilot，不含 Claude Code、Antigravity CLI 與 abtop，因其使用 native install 或 binary release）。
 2. 執行 `npm outdated -g` 判斷版本差異，失敗時不阻斷啟動。
 3. 若偵測到更新，顯示建議指令；當 `CLI_AUTO_UPDATE=1` 時，自動執行 `npm i -g <pkg>@latest`。
 4. Claude Code 使用 native installer，會自動在背景更新，或可手動執行 `claude update`。
@@ -135,6 +135,7 @@ Dev-Ai-Agent 以 `debian:bookworm-slim` 為基礎，建置一個非 root 的 `ai
 | ------------------ | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Claude Code        | `claude`, `claude chat`, `claude edit`   | 使用 native install 安裝，會自動背景更新。手動執行 `~/.claude/setup-claude.sh` 後會加入 `cc`, `cchelp`, `cskip`, `ccgod` 等 alias；`cskip`/`ccgod` 會跳過安全檢查，僅在可完全信任的倉庫使用。更新方式：`claude update`。 |
 | Antigravity CLI    | `agy`                                    | 使用官方 native installer 安裝，設定位於 `~/.gemini/antigravity-cli`；手動執行 `~/.gemini/setup-agy.sh` 後會建立 `ag`, `agyhelp`, `agyv` 等別名。                                                                            |
+| abtop              | `abtop`, `abtop --once`, `abtop --json`  | 使用官方 Linux installer 安裝至 `~/.local/bin`。可即時檢視 Claude Code、Codex CLI、OpenCode session、token 使用量、context window、rate limit、子程序與開啟的 port；資料來源為本機程序與檔案狀態。 |
 | Codex CLI          | `codex`, `codex --profile <name>`        | `config.toml` 已定義 OpenAI、Ollama、vLLM 等 profiles；執行 `~/.codex/setup-codex.sh` 會加入 `cx`, `cxgod` 等 alias，其中 `cxgod` 會略過 sandbox 與審核程序。                                                            |
 | Pi Coding Agent    | `pi`, `pi -c`, `pi -r`                   | 設定目錄掛載於 `~/.pi`；執行 `~/.pi/setup-pi.sh` 後會加入 `pihelp`、`piresume`、`picont`、`piconfig` 等 alias。全域設定會啟用 `~/.bashrc` alias 載入，session 預設保存於 `/home/aiagent/projects/pi-sessions`，並自動讀取專案內的 `AGENTS.md` 或 `CLAUDE.md`。 |
 | Grok CLI           | `grok`                                   | 由 Dockerfile 全域安裝，可直接對話。                                                                                                                                                                                     |
